@@ -55,27 +55,19 @@
                 </select>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In Time</label>
+                <input type="time" name="check_in" id="filterCheckIn" class="form-control rounded-3" value="{{ selected_check_in }}">
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out Time</label>
+                <input type="time" name="check_out" id="filterCheckOut" class="form-control rounded-3" value="{{ selected_check_out }}">
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-person-badge me-1"></i>Teacher (Marked By)</label>
                 <select name="teacher" class="form-select rounded-3">
                     <option value="all" {% if selected_teacher == 'all' %}selected{% endif %}>Current / All Teachers</option>
                     {% for t in teachers %}
                     <option value="{{ t.id }}" {% if selected_teacher == (t.id|string) %}selected{% endif %}>{{ t.name }} ({{ t.department }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In (IST 12h)</label>
-                <select name="check_in" id="filterCheckIn" class="form-select rounded-3">
-                    {% for opt in check_in_options %}
-                    <option value="{{ opt }}" {% if selected_check_in == opt %}selected{% endif %}>{{ opt }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out (IST 12h)</label>
-                <select name="check_out" id="filterCheckOut" class="form-select rounded-3">
-                    {% for opt in check_out_options %}
-                    <option value="{{ opt }}" {% if selected_check_out == opt %}selected{% endif %}>{{ opt }}</option>
                     {% endfor %}
                 </select>
             </div>
