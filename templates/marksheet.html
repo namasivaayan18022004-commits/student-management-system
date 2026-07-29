@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="no-print">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('marks') }}">Marks Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('marks_list') }}">Marks Directory</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Student Marksheet ({{ student.student_id }})</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    #sidebar, .top-navbar, .breadcrumb { display: none !important; }
+    #content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    body { background-color: #fff !important; }
+}
+.marksheet-header-border {
+    border-bottom: 3px double #0d6efd;
+}
+.watermark-bg {
+    position: relative;
+}
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Action Toolbar (Hidden in Print) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 no-print">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-text-fill text-primary me-2"></i>Official Student Marksheet</h2>
+            <p class="text-muted mb-0">Consolidated Academic Transcript & Examination Performance Report</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <button onclick="window.print()" class="btn btn-outline-dark shadow-sm">
+                <i class="bi bi-printer-fill me-1"></i> Print Marksheet
+            </button>
+            <button id="downloadPdfBtn" class="btn btn-primary shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download PDF
+            </button>
+            <a href="{{ url_for('marks_list') }}" class="btn btn-light shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Directory
+            </a>
+        </div>
+    </div>
+
+    <!-- Marksheet Printable Document -->
+    <div id="marksheetPrintable" class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white watermark-bg">
+        <!-- Institution Header -->
+        <div class="text-center pb-4 mb-4 marksheet-header-border">
+            <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                <i class="bi bi-mortarboard-fill text-primary" style="font-size: 2.8rem;"></i>
+                <div>
+                    <h3 class="fw-bold text-uppercase text-primary mb-1" style="letter-spacing: 1px;">Sri Manakula Vinayagar Engineering College</h3>
+                    <h6 class="text-muted text-uppercase mb-0" style="font-size: 0.85rem; letter-spacing: 2px;">An Autonomous Institution | Accredited by NAAC with 'A' Grade</h6>
+                </div>
+            </div>
+            <h5 class="fw-bold text-dark mt-3 mb-1 text-uppercase" style="letter-spacing: 1.5px;">Official Statement of Marks & Academic Grades</h5>
+            <span class="badge bg-light text-secondary border px-3 py-1">ACADEMIC EXAMINATIONS TRANSCRIPT</span>
+        </div>
+
+        <!-- Student Profile Card -->
+        <div class="card bg-light border-0 rounded-4 mb-4 p-3">
+            <div class="card-body">
+                <div class="row align-items-center g-3">
+                    <div class="col-auto">
+                        {% if student.photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + student.photo) }}" alt="{{ student.name }}" class="rounded-circle shadow-sm border border-2 border-white" width="80" height="80" style="object-fit: cover;">
+                        {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ student.name | urlencode }}&background=0D8ABC&color=fff&size=80" alt="{{ student.name }}" class="rounded-circle shadow-sm">
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <div class="row g-2">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Student Register ID:</span>
+                                <strong class="fs-5 text-primary">{{ student.student_id }}</strong>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Student Full Name:</span>
+                                <strong class="fs-5 text-dark">{{ student.name }}</strong>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Department / Branch:</span>
+                                <strong class="text-dark">{{ student.department }}</strong>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Academic Year:</span>
+                                <strong class="text-dark">{{ student.year }}</strong>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Gender / Age:</span>
+                                <strong class="text-dark">{{ student.gender }}, {{ student.age }} yrs</strong>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <span class="text-muted fs-7 d-block">Enrollment Status:</span>
+                                <span class="badge bg-success">{{ student.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comprehensive Subject Marks Table -->
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-check text-primary me-2"></i>Subject-Wise Examination Performance</h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th style="width: 50px;">S.No</th>
+                        <th>Sem</th>
+                        <th>Sub Code</th>
+                        <th class="text-start">Subject Title</th>
+                        <th>Faculty</th>
+                        <th>Int <span class="fs-7 text-muted">(25)</span></th>
+                        <th>Ass <span class="fs-7 text-muted">(10)</span></th>
+                        <th>Prac <span class="fs-7 text-muted">(15)</span></th>
+                        <th>Ext <span class="fs-7 text-muted">(50)</span></th>
+                        <th>Total <span class="fs-7 text-muted">(100)</span></th>
+                        <th>Grade</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in marks %}
+                    <tr class="text-center">
+                        <td>{{ loop.index }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ m.semester }}</span></td>
+                        <td class="fw-bold">{{ m.subject_code }}</td>
+                        <td class="text-start fw-bold text-dark">{{ m.subject }}</td>
+                        <td class="fs-7 text-muted">{{ m.teacher }}</td>
+                        <td>{{ m.internal_marks }}</td>
+                        <td>{{ m.assignment_marks }}</td>
+                        <td>{{ m.practical_marks }}</td>
+                        <td>{{ m.external_marks }}</td>
+                        <td class="fw-bold fs-6 text-primary">{{ m.total_marks }}</td>
+                        <td>
+                            {% if m.grade in ['O', 'A+'] %}
+                                <span class="badge bg-success">{{ m.grade }}</span>
+                            {% elif m.grade in ['A', 'B+'] %}
+                                <span class="badge bg-primary">{{ m.grade }}</span>
+                            {% elif m.grade in ['B', 'C'] %}
+                                <span class="badge bg-warning text-dark">{{ m.grade }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ m.grade }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.result == 'Pass' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">PASS</span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">FAIL</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="12" class="text-center py-4 text-muted">No examination marks recorded for this student.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Academic Summary Card & Class Obtained Banner -->
+        <div class="row g-3 mb-5">
+            <div class="col-12 col-md-7">
+                <div class="card border rounded-4 h-100 p-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-award-fill text-warning me-2"></i>Overall Academic Classification</h6>
+                        <div class="row g-3 text-center">
+                            <div class="col-4 border-end">
+                                <span class="text-muted fs-7 d-block">Total Obtained</span>
+                                <strong class="fs-5 text-primary">{{ total_obtained }} / {{ total_maximum }}</strong>
+                            </div>
+                            <div class="col-4 border-end">
+                                <span class="text-muted fs-7 d-block">Average %</span>
+                                <strong class="fs-5 text-dark">{{ avg_pct }}%</strong>
+                            </div>
+                            <div class="col-4">
+                                <span class="text-muted fs-7 d-block">Overall CGPA</span>
+                                <strong class="fs-5 text-success">{{ cgpa }} / 10.0</strong>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted fw-medium">Class Obtained:</span>
+                            <div>
+                                {% if 'Distinction' in class_obtained %}
+                                    <span class="badge bg-success fs-6 px-3 py-2"><i class="bi bi-star-fill me-1"></i>{{ class_obtained }}</span>
+                                {% elif class_obtained == 'First Class' %}
+                                    <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-award me-1"></i>{{ class_obtained }}</span>
+                                {% elif class_obtained == 'Second Class' %}
+                                    <span class="badge bg-info text-dark fs-6 px-3 py-2">{{ class_obtained }}</span>
+                                {% elif class_obtained == 'Pass' %}
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">{{ class_obtained }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6 px-3 py-2">{{ class_obtained }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-5">
+                <div class="card border rounded-4 h-100 p-3 bg-light">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-patch-check-fill text-success me-2"></i>Grading Scale & Legend</h6>
+                        <div class="row g-1 fs-7 text-muted">
+                            <div class="col-6"><strong>90-100:</strong> O (Outstanding, 10)</div>
+                            <div class="col-6"><strong>80-89:</strong> A+ (Excellent, 9)</div>
+                            <div class="col-6"><strong>70-79:</strong> A (Very Good, 8)</div>
+                            <div class="col-6"><strong>60-69:</strong> B+ (Good, 7)</div>
+                            <div class="col-6"><strong>50-59:</strong> B (Above Avg, 6)</div>
+                            <div class="col-6"><strong>40-49:</strong> C (Average, 5)</div>
+                            <div class="col-12 text-danger"><strong>Below 40:</strong> F (Fail / Re-appear, 0)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Block -->
+        <div class="row text-center pt-4 mt-3 border-top">
+            <div class="col-4">
+                <p class="mb-5 text-muted fs-7">Date of Issue: <strong>{{ student.created_at.strftime('%d-%m-%Y') if student.created_at else '27-07-2026' }}</strong></p>
+                <div class="border-top pt-2 d-inline-block px-4">
+                    <strong class="fs-7 text-dark">Prepared By</strong>
+                </div>
+            </div>
+            <div class="col-4">
+                <p class="mb-5 text-muted fs-7">&nbsp;</p>
+                <div class="border-top pt-2 d-inline-block px-4">
+                    <strong class="fs-7 text-dark">Controller of Examinations</strong>
+                </div>
+            </div>
+            <div class="col-4">
+                <p class="mb-5 text-muted fs-7">&nbsp;</p>
+                <div class="border-top pt-2 d-inline-block px-4">
+                    <strong class="fs-7 text-dark">Principal / Dean</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', function() {
+            const element = document.getElementById('marksheetPrintable');
+            const opt = {
+                margin:       0.3,
+                filename:     `Marksheet_{{ student.student_id }}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Settings</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header & Instant Search -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-md-7">
+            <h2 class="fw-bold mb-1"><i class="bi bi-gear-fill text-primary me-2"></i>System Administration & Settings</h2>
+            <p class="text-secondary mb-0">Central control panel to configure institutional profile, administrator accounts, security policies, and system diagnostics.</p>
+        </div>
+        <div class="col-md-5">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-secondary"></i></span>
+                <input type="text" id="settingsSearchInput" class="form-control border-start-0" placeholder="Search settings by category, security, or activity..." aria-label="Search Settings">
+                <button class="btn btn-primary px-4" type="button" onclick="performSettingsSearch()">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Search Results Container (Hidden by Default) -->
+    <div id="searchResultsContainer" class="d-none mb-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-search me-2 text-primary"></i>Search Results</h5>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="clearSettingsSearch()">Clear Search</button>
+            </div>
+            <div id="searchResultsList" class="list-group list-group-flush">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 10 Categories Grid -->
+    <div class="row g-4" id="settingsCardsGrid">
+        <!-- 1. College Settings -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="College institutional name logo address contact website academic year">
+            <a href="{{ url_for('settings_college') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-building fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">College Settings</h5>
+                    <p class="text-secondary small mb-3">Configure institution name, college logo, address, contact details & current academic year.</p>
+                    <span class="btn btn-sm btn-outline-primary rounded-pill mt-auto px-3">Configure <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Admin Profile -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Admin Profile administrator full name photo email phone address">
+            <a href="{{ url_for('settings_profile') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-person-badge fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Admin Profile</h5>
+                    <p class="text-secondary small mb-3">Manage administrator photo, full name, username, email, phone number & personal address.</p>
+                    <span class="btn btn-sm btn-outline-info rounded-pill mt-auto px-3">Update Profile <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 3. Change Password -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Change Password security login credentials current password new confirm">
+            <a href="{{ url_for('settings_profile') }}#password" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-shield-lock fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Change Password</h5>
+                    <p class="text-secondary small mb-3">Update administrator login password with uppercase, lowercase, numbers & symbols validation.</p>
+                    <span class="btn btn-sm btn-outline-danger rounded-pill mt-auto px-3">Change Password <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 4. User Management -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="User Management admins add edit delete activate deactivate accounts roles">
+            <a href="{{ url_for('settings_users') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-people fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">User Management</h5>
+                    <p class="text-secondary small mb-3">Add, edit, delete & activate administrator accounts with role-based status controls.</p>
+                    <span class="btn btn-sm btn-outline-success rounded-pill mt-auto px-3">Manage Users <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 5. Security Settings -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Security Settings 2FA two factor auto logout lock duration login attempts password policy">
+            <a href="{{ url_for('settings_security') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-shield-check fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Security Settings</h5>
+                    <p class="text-secondary small mb-3">Configure Two-Factor Authentication, session auto-logout, max login attempts & lockout duration.</p>
+                    <span class="btn btn-sm btn-outline-warning rounded-pill mt-auto px-3">Security Policy <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 6. Backup & Restore -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Backup Restore SQLite database download history delete recovery">
+            <a href="{{ url_for('settings_backup') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-hdd-network fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Backup & Restore</h5>
+                    <p class="text-secondary small mb-3">Backup SQLite database, download archive files, restore system state & review backup history.</p>
+                    <span class="btn btn-sm btn-outline-primary rounded-pill mt-auto px-3">Backup Database <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 7. Notification Settings -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Notification Settings alerts student notifications fee reminders attendance marks reports">
+            <a href="{{ url_for('settings_notifications') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-bell fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Notification Settings</h5>
+                    <p class="text-secondary small mb-3">Toggle student alerts, fee reminders, attendance warnings & marks update notifications.</p>
+                    <span class="btn btn-sm btn-outline-info rounded-pill mt-auto px-3">Alert Preferences <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 8. Email Configuration -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Email Configuration SMTP server port address app password sender test email">
+            <a href="{{ url_for('settings_email') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-envelope-at fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Email Configuration</h5>
+                    <p class="text-secondary small mb-3">Configure SMTP server, port, email credentials, sender name & execute test email delivery.</p>
+                    <span class="btn btn-sm btn-outline-danger rounded-pill mt-auto px-3">SMTP Settings <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 9. Appearance Settings -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="Appearance Settings light mode dark mode system theme sidebar color accent font size">
+            <a href="{{ url_for('settings_appearance') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-palette fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Appearance</h5>
+                    <p class="text-secondary small mb-3">Customize Light & Dark modes, sidebar background, primary accent colors & display font size.</p>
+                    <span class="btn btn-sm btn-outline-success rounded-pill mt-auto px-3">Customize Theme <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 10. System Information & Logs -->
+        <div class="col-md-6 col-lg-4 col-xl-3 settings-card-item" data-category="System Information Activity Log version python flask sqlite database size audit history">
+            <a href="{{ url_for('settings_system') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center hover-lift transition-all">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle" style="width: 64px; height: 64px;">
+                            <i class="bi bi-cpu fs-3"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">System Info & Logs</h5>
+                    <p class="text-secondary small mb-3">View Python, Flask & SQLite versions, database size statistics & complete audit log trail.</p>
+                    <span class="btn btn-sm btn-outline-secondary rounded-pill mt-auto px-3">View Diagnostics <i class="bi bi-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+.transition-all {
+    transition: all 0.25s ease;
+}
+</style>
+
+<script>
+function performSettingsSearch() {
+    const query = document.getElementById('settingsSearchInput').value.toLowerCase().trim();
+    if (!query) {
+        clearSettingsSearch();
+        return;
+    }
+    const cards = document.querySelectorAll('.settings-card-item');
+    let matchedCount = 0;
+    cards.forEach(card => {
+        const text = card.getAttribute('data-category').toLowerCase();
+        if (text.includes(query)) {
+            card.style.display = '';
+            matchedCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Also fetch API search results
+    fetch(`/api/settings/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('searchResultsContainer');
+            const list = document.getElementById('searchResultsList');
+            list.innerHTML = '';
+            if (data && data.length > 0) {
+                container.classList.remove('d-none');
+                data.forEach(item => {
+                    const li = document.createElement('a');
+                    li.href = item.url;
+                    li.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3';
+                    li.innerHTML = `
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark">${item.title}</h6>
+                            <p class="mb-0 text-secondary small">${item.description}</p>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">${item.category}</span>
+                    `;
+                    list.appendChild(li);
+                });
+            } else {
+                container.classList.add('d-none');
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+function clearSettingsSearch() {
+    document.getElementById('settingsSearchInput').value = '';
+    document.querySelectorAll('.settings-card-item').forEach(card => card.style.display = '');
+    document.getElementById('searchResultsContainer').classList.add('d-none');
+}
+
+document.getElementById('settingsSearchInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        performSettingsSearch();
+    } else if (this.value.trim() === '') {
+        clearSettingsSearch();
+    }
+});
+</script>
+{% endblock %}

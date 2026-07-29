@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Student Management System{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary shadow-sm"><i class="bi bi-person-plus"></i> Add Student</a>
+            <a href="{{ url_for('students') }}" class="btn btn-info text-white shadow-sm"><i class="bi bi-people"></i> Students</a>
+
+            <a href="{{ url_for('reports') }}" class="btn btn-warning text-white shadow-sm"><i class="bi bi-bar-chart-fill"></i> Reports</a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card border-primary border-start border-4">
+                <div class="card-body">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1">Total Students</h6>
+                        <h2 class="mb-0 fw-bold">{{ total_students }}</h2>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card border-success border-start border-4">
+                <div class="card-body">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1">Departments</h6>
+                        <h2 class="mb-0 fw-bold">{{ departments_count }}</h2>
+                    </div>
+                    <div class="icon text-success">
+                        <i class="bi bi-building"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card border-info border-start border-4">
+                <div class="card-body">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1">Male Students</h6>
+                        <h2 class="mb-0 fw-bold">{{ male_students }}</h2>
+                    </div>
+                    <div class="icon text-info">
+                        <i class="bi bi-gender-male"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card border-danger border-start border-4">
+                <div class="card-body">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-bold mb-1">Female Students</h6>
+                        <h2 class="mb-0 fw-bold">{{ female_students }}</h2>
+                    </div>
+                    <div class="icon text-danger">
+                        <i class="bi bi-gender-female"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Tables -->
+    <div class="row mt-4">
+        <!-- Chart -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i class="bi bi-pie-chart-fill text-primary"></i> Department Distribution</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    {% if total_students > 0 %}
+                    <canvas id="deptChart" style="max-height: 300px;"></canvas>
+                    {% else %}
+                    <p class="text-muted text-center">No data available to display chart.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Students -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold"><i class="bi bi-clock-history text-success"></i> Newly Added Students</h5>
+                    <a href="{{ url_for('students') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in recent_students %}
+                                <tr style="cursor: default;">
+                                    <td>{{ student.student_id }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.department }}</td>
+                                    <td>{{ student.created_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No students added yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Safe JSON parsing for Jinja variables
+    const deptLabels = {{ dept_labels | tojson | safe }};
+    const deptData = {{ dept_data | tojson | safe }};
+    
+    let chartInstance = null;
+
+    function renderCharts() {
+        if(deptLabels.length === 0) return;
+        
+        const ctx = document.getElementById('deptChart');
+        if(!ctx) return;
+
+        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDarkMode ? '#e9ecef' : '#212529';
+        
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    data: deptData,
+                    backgroundColor: [
+                        '#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545', '#6610f2'
+                    ],
+                    borderWidth: isDarkMode ? 0 : 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", renderCharts);
+</script>
+{% endblock %}

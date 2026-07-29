@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Backup & Restore</li>
+        </ol>
+    </nav>
+
+    <!-- Header & Action -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-hdd-network text-primary me-2"></i>Database Backup & Recovery</h2>
+            <p class="text-secondary mb-0">Create SQLite database backups, download backup archives, and restore previous system snapshots.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="POST" action="{{ url_for('settings_backup_create') }}">
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-cloud-arrow-down-fill me-1"></i>Create New Database Backup
+                </button>
+            </form>
+            <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back to Settings
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 d-flex flex-row align-items-center">
+                <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle me-3" style="width: 56px; height: 56px;">
+                    <i class="bi bi-database fs-4"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0">{{ db_size }}</h5>
+                    <small class="text-secondary">Current SQLite Database Size</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 d-flex flex-row align-items-center">
+                <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle me-3" style="width: 56px; height: 56px;">
+                    <i class="bi bi-archive fs-4"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0">{{ backups|length }}</h5>
+                    <small class="text-secondary">Total Backups Stored</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 d-flex flex-row align-items-center">
+                <span class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-circle me-3" style="width: 56px; height: 56px;">
+                    <i class="bi bi-clock-history fs-4"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0">{% if backups %}{{ backups[0].backup_date.strftime('%Y-%m-%d %H:%M') }}{% else %}Never{% endif %}</h5>
+                    <small class="text-secondary">Last Backup Timestamp</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backups Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-list-columns-reverse me-2 text-primary"></i>Backup Archive History</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Backup File Name</th>
+                        <th scope="col">File Size</th>
+                        <th scope="col">Created Date & Time</th>
+                        <th scope="col">Created By</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in backups %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ b.id }}</td>
+                        <td>
+                            <i class="bi bi-file-earmark-zip-fill text-primary me-2"></i>
+                            <span class="fw-bold">{{ b.filename }}</span>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ b.file_size }}</span></td>
+                        <td>{{ b.backup_date.strftime('%b %d, %Y - %I:%M %p') }}</td>
+                        <td>{{ b.created_by }}</td>
+                        <td><small class="text-secondary">{{ b.notes or 'Manual Backup' }}</small></td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <!-- Download Button -->
+                                <a href="{{ url_for('settings_backup_download', backup_id=b.id) }}" class="btn btn-sm btn-outline-primary" title="Download SQLite DB">
+                                    <i class="bi bi-download"></i>
+                                </a>
+
+                                <!-- Restore Button -->
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#restoreModal{{ b.id }}" title="Restore Database">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+
+                                <!-- Delete Button -->
+                                <form method="POST" action="{{ url_for('settings_backup_delete', backup_id=b.id) }}" class="d-inline" onsubmit="return confirm('Delete this backup file?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Backup">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Restore Confirmation Modal -->
+                    <div class="modal fade" id="restoreModal{{ b.id }}" tabindex="-1" aria-labelledby="restoreModalLabel{{ b.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow rounded-4">
+                                <div class="modal-header bg-warning text-dark border-bottom-0">
+                                    <h5 class="modal-title fw-bold" id="restoreModalLabel{{ b.id }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Database Restore</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4 text-center">
+                                    <i class="bi bi-database-exclamation text-warning mb-3 d-block" style="font-size: 3rem;"></i>
+                                    <h5 class="fw-bold mb-2">Restore from "{{ b.filename }}"?</h5>
+                                    <p class="text-secondary small mb-0">Warning: Restoring this database will overwrite all current data (Students, Teachers, Attendance, Marks, Fees, and Reports) with the snapshot from {{ b.backup_date.strftime('%Y-%m-%d') }}.</p>
+                                </div>
+                                <div class="modal-footer border-top justify-content-center">
+                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                    <form method="POST" action="{{ url_for('settings_backup_restore', backup_id=b.id) }}">
+                                        <button type="submit" class="btn btn-warning text-dark rounded-pill px-4">Yes, Restore Database</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-secondary">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No database backups found. Click "Create New Database Backup" above.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

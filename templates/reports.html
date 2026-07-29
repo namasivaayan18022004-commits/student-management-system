@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Reports - Student Management System{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Reports</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Filters and Export Actions -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-info h-100">
+            <div class="card-header bg-info text-white pt-3 pb-2">
+                <h5 class="fw-bold mb-0"><i class="bi bi-funnel-fill"></i> Generate Report</h5>
+            </div>
+            <div class="card-body">
+                <form id="reportForm">
+                    <div class="mb-3">
+                        <label for="reportFilter" class="form-label fw-semibold">Select Report Type</label>
+                        <select class="form-select" id="reportFilter" name="filter">
+                            <option value="all">Complete Student List</option>
+                            <option value="male">Male Students Only</option>
+                            <option value="female">Female Students Only</option>
+                            <optgroup label="Department-wise">
+                                <option value="dept_Computer Science">Computer Science</option>
+                                <option value="dept_Electrical Engineering">Electrical Engineering</option>
+                                <option value="dept_Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="dept_Civil Engineering">Civil Engineering</option>
+                                <option value="dept_Business Administration">Business Administration</option>
+                                <option value="dept_Arts & Humanities">Arts & Humanities</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="fw-bold mb-3">Export Options</h6>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-danger" onclick="exportReport('pdf')">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Export PDF (Print View)
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="exportReport('excel')">
+                            <i class="bi bi-file-earmark-excel-fill"></i> Export Excel
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="exportReport('csv')">
+                            <i class="bi bi-filetype-csv"></i> Download CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="printReport()">
+                            <i class="bi bi-printer-fill"></i> Print Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Area -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-eye"></i> Report Preview Area</h5>
+                <span class="badge bg-primary">Preview</span>
+            </div>
+            <div class="card-body p-4 bg-light bg-opacity-50" id="report-content" style="min-height: 400px;">
+                <div class="text-center mb-4">
+                    <h2>College ERP System</h2>
+                    <h4>Student Information Report</h4>
+                    <p class="text-muted" id="previewDate"></p>
+                </div>
+                
+                <div class="alert alert-info border-0 shadow-sm">
+                    <i class="bi bi-info-circle-fill"></i> 
+                    Select a report type and use the export buttons on the left to download your data.
+                    For PDF generation, it will capture the current table view structure if rendered, or you can print this page.
+                    The Backend handles direct Excel and CSV downloads based on your filters.
+                </div>
+                
+                <div class="text-center text-muted mt-5 pt-5">
+                    <i class="bi bi-file-earmark-text display-1 opacity-25"></i>
+                    <p class="mt-3">Data will be processed according to selected filters upon export.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('previewDate').innerText = "Generated on: " + new Date().toLocaleDateString();
+
+    function exportReport(format) {
+        const filter = document.getElementById('reportFilter').value;
+        if (format === 'pdf') {
+            // Wait, we can't easily fetch and render everything here without an AJAX call to load the preview.
+            // Let's redirect to a print view or use html2pdf on the current container.
+            // Given the requirement, using print() or html2pdf() on a dedicated page is best.
+            // We will just call the print method as a simplified PDF approach, or redirect to a backend HTML that we can print.
+            // However, the easiest is to just print the page.
+            alert('For PDF export, please use the Print Report button and select "Save as PDF" as the destination, or use the JS PDF builder.');
+            exportPDF();
+        } else {
+            // Direct download via backend
+            window.location.href = `/export/${format}?filter=${filter}`;
+        }
+    }
+</script>
+{% endblock %}

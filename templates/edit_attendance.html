@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Attendance Record #{{ record.id }} - College ERP{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded-3 shadow-sm border">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('attendance_dashboard') }}" class="text-decoration-none"><i class="bi bi-calendar-check-fill"></i> Attendance Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('attendance_history') }}" class="text-decoration-none"><i class="bi bi-clock-history"></i> History</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Record #{{ record.id }}</li>
+    </ol>
+</nav>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+            <div class="card-header bg-white border-bottom pt-4 px-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold text-dark mb-1"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Attendance Record #{{ record.id }}</h4>
+                    <p class="text-muted small mb-0">Modify student attendance status, date, check-in/out times, or administrative remarks.</p>
+                </div>
+                <span class="badge bg-light text-dark border px-3 py-2">ID: {{ record.id }}</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('edit_attendance', attendance_id=record.id) }}" class="row g-3">
+                    {{ form.hidden_tag() }}
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-person me-1"></i>Student</label>
+                        {{ form.student_id(class="form-select rounded-3") }}
+                        {% if form.student_id.errors %}
+                            <div class="text-danger small mt-1">{{ form.student_id.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-person-badge me-1"></i>Marked By (Teacher)</label>
+                        {{ form.teacher_id(class="form-select rounded-3") }}
+                        {% if form.teacher_id.errors %}
+                            <div class="text-danger small mt-1">{{ form.teacher_id.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-calendar-date me-1"></i>Attendance Date (YYYY-MM-DD)</label>
+                        {{ form.date(class="form-control rounded-3", type="date") }}
+                        {% if form.date.errors %}
+                            <div class="text-danger small mt-1">{{ form.date.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-check-circle me-1"></i>Status</label>
+                        {{ form.status(class="form-select rounded-3") }}
+                        {% if form.status.errors %}
+                            <div class="text-danger small mt-1">{{ form.status.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In Time</label>
+                        {{ form.check_in_time(class="form-control rounded-3", placeholder="e.g. 08:50 AM") }}
+                        {% if form.check_in_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.check_in_time.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out Time</label>
+                        {{ form.check_out_time(class="form-control rounded-3", placeholder="e.g. 04:30 PM") }}
+                        {% if form.check_out_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.check_out_time.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-dark small"><i class="bi bi-card-text me-1"></i>Remarks / Notes</label>
+                        {{ form.remarks(class="form-control rounded-3", placeholder="Add administrative notes or medical leave reference...") }}
+                        {% if form.remarks.errors %}
+                            <div class="text-danger small mt-1">{{ form.remarks.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{{ url_for('attendance_history') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                            <i class="bi bi-check-lg me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

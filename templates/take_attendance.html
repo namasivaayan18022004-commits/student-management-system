@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Take Attendance - College ERP{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb bg-white px-3 py-2 rounded-3 shadow-sm border">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('attendance_dashboard') }}" class="text-decoration-none"><i class="bi bi-calendar-check-fill"></i> Attendance Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Take & Bulk Attendance</li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-person-check-fill text-primary me-2"></i>Take & Bulk Mark Attendance</h2>
+        <p class="text-muted mb-0">Select criteria, mark individual or bulk status, and save institutional attendance in one click.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('attendance_history') }}" class="btn btn-outline-dark rounded-pill px-3 shadow-sm d-flex align-items-center">
+            <i class="bi bi-clock-history me-2"></i> History
+        </a>
+        <a href="{{ url_for('attendance_reports') }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i> Reports
+        </a>
+    </div>
+</div>
+
+<!-- Top Filters Bar -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+    <div class="card-body p-4">
+        <form method="GET" action="{{ url_for('take_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-calendar-event me-1"></i>Attendance Date</label>
+                <input type="date" name="date" class="form-control rounded-3" value="{{ selected_date }}" required>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-mortarboard me-1"></i>Year</label>
+                <select name="year" class="form-select rounded-3">
+                    <option value="all" {% if selected_year == 'all' %}selected{% endif %}>All Academic Years</option>
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-bookmark me-1"></i>Semester</label>
+                <select name="semester" class="form-select rounded-3">
+                    <option value="all" {% if selected_semester == 'all' %}selected{% endif %}>All Semesters</option>
+                    {% for s in semesters %}
+                    <option value="{{ s }}" {% if selected_semester == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-person-badge me-1"></i>Teacher (Marked By)</label>
+                <select name="teacher" class="form-select rounded-3">
+                    <option value="all" {% if selected_teacher == 'all' %}selected{% endif %}>Current / All Teachers</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.id }}" {% if selected_teacher == (t.id|string) %}selected{% endif %}>{{ t.name }} ({{ t.department }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                <a href="{{ url_for('take_attendance') }}" class="btn btn-outline-secondary rounded-pill px-4">Reset</a>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-filter me-1"></i> Apply Filters</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Attendance Form with Bulk Action Toolbar & Student Table -->
+<form method="POST" action="{{ url_for('take_attendance') }}">
+    <!-- Hidden fields to carry selected filters -->
+    <input type="hidden" name="date" value="{{ selected_date }}">
+    <input type="hidden" name="teacher_id" value="{{ selected_teacher if selected_teacher != 'all' else '' }}">
+
+    <!-- Bulk Action Toolbar -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light border">
+        <div class="card-body p-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-dark me-2"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Bulk Attendance:</span>
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="markAll('Present')">
+                    <i class="bi bi-check-circle-fill me-1"></i> Mark All Present
+                </button>
+                <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm" onclick="markAll('Absent')">
+                    <i class="bi bi-x-circle-fill me-1"></i> Mark All Absent
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="clearSelection()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Selection
+                </button>
+            </div>
+            <div>
+                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ students|length }} Students Found</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Attendance List Table -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 bg-white">
+        <div class="card-header bg-white border-bottom pt-4 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-people text-primary me-2"></i>Students Directory — Attendance for <span class="text-primary">{{ selected_date }}</span>
+            </h5>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center">
+                <i class="bi bi-floppy-fill me-2"></i> Save Attendance
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th class="py-3 px-4" style="width: 80px;">Photo</th>
+                            <th class="py-3">Student ID</th>
+                            <th class="py-3">Student Name</th>
+                            <th class="py-3 text-center" style="width: 110px;">Present</th>
+                            <th class="py-3 text-center" style="width: 110px;">Absent</th>
+                            <th class="py-3 text-center" style="width: 110px;">Leave</th>
+                            <th class="py-3 px-4" style="width: 250px;">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                        {% set rec = att_map.get(s.id) %}
+                        {% set curr_st = rec.status if rec else 'Present' %}
+                        <tr>
+                            <td class="px-4">
+                                {% if s.photo %}
+                                    <img src="{{ url_for('static', filename='images/uploads/' + s.photo) }}" alt="{{ s.name }}" class="rounded-circle border" style="width: 44px; height: 44px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 16px;">
+                                        {{ s.name[:2]|upper }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold text-secondary">{{ s.student_id }}</td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ s.name }}</div>
+                                <small class="text-muted">{{ s.department }} — {{ s.year }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check d-flex justify-content-center">
+                                    <input class="form-check-input status-radio status-present" type="radio" name="status_{{ s.id }}" id="pres_{{ s.id }}" value="Present" {% if curr_st == 'Present' %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check d-flex justify-content-center">
+                                    <input class="form-check-input status-radio status-absent" type="radio" name="status_{{ s.id }}" id="abs_{{ s.id }}" value="Absent" {% if curr_st == 'Absent' %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check d-flex justify-content-center">
+                                    <input class="form-check-input status-radio status-leave" type="radio" name="status_{{ s.id }}" id="lev_{{ s.id }}" value="Leave" {% if curr_st == 'Leave' %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td class="px-4">
+                                <input type="text" name="remarks_{{ s.id }}" class="form-control form-control-sm rounded-3" placeholder="Add remarks..." value="{{ rec.remarks if rec and rec.remarks else '' }}">
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-1 d-block mb-2"></i>
+                                No active students found matching the selected year filter.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-top p-4 d-flex justify-content-between align-items-center">
+            <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Saving will overwrite any existing records for this date and insert new entries where none exist.</span>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm py-2 fw-bold">
+                <i class="bi bi-check-lg me-1"></i> Save All Attendance
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+function markAll(statusType) {
+    const selector = statusType === 'Present' ? '.status-present' : (statusType === 'Absent' ? '.status-absent' : '.status-leave');
+    const radios = document.querySelectorAll(selector);
+    radios.forEach(radio => {
+        radio.checked = true;
+    });
+}
+
+function clearSelection() {
+    const allRadios = document.querySelectorAll('.status-radio');
+    allRadios.forEach(radio => {
+        radio.checked = false;
+    });
+}
+</script>
+
+<style>
+.form-check-input {
+    width: 1.35em;
+    height: 1.35em;
+    cursor: pointer;
+}
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('fees_dashboard') }}">Fees Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Fee Records</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-table text-primary me-2"></i>Institutional Fee Records</h2>
+            <p class="text-muted mb-0">Search, filter, edit, or generate receipts for student fee accounts</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('add_fee') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Add Fee Record
+            </a>
+            <a href="{{ url_for('fees_reports') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>Export Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Multi-Criteria Filters -->
+    <div class="card border-0 shadow-sm mb-4 p-4 bg-light">
+        <form method="GET" action="{{ url_for('fees_records') }}" class="row g-3 align-items-end">
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <label class="form-label small fw-semibold text-muted">Search Keyword</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Receipt / Name / Category..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-lg-3 col-md-6">
+                <label class="form-label small fw-semibold text-muted">Academic Year</label>
+                <select name="year" class="form-select">
+                    <option value="all">All Years</option>
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xl-1 col-lg-2 col-md-4">
+                <label class="form-label small fw-semibold text-muted">Semester</label>
+                <select name="semester" class="form-select">
+                    <option value="all">All Semesters</option>
+                    {% for sem in semesters %}
+                    <option value="{{ sem }}" {% if selected_sem == sem %}selected{% endif %}>{{ sem }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xl-2 col-lg-3 col-md-4">
+                <label class="form-label small fw-semibold text-muted">Fee Category</label>
+                <select name="category" class="form-select">
+                    <option value="all">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if selected_cat == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xl-2 col-lg-3 col-md-4">
+                <label class="form-label small fw-semibold text-muted">Payment Status</label>
+                <select name="status" class="form-select">
+                    <option value="all">All Statuses</option>
+                    <option value="Paid" {% if selected_status == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Partially Paid" {% if selected_status == 'Partially Paid' %}selected{% endif %}>Partially Paid</option>
+                    <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Overdue" {% if selected_status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                </select>
+            </div>
+
+            <div class="col-xl-2 col-lg-3 col-md-6">
+                <label class="form-label small fw-semibold text-muted">Sort By</label>
+                <select name="sort" class="form-select">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                    <option value="student" {% if sort_by == 'student' %}selected{% endif %}>Student Name</option>
+                    <option value="amount_desc" {% if sort_by == 'amount_desc' %}selected{% endif %}>Highest Amount</option>
+                </select>
+            </div>
+
+            <div class="col-xl-12 d-flex justify-content-end gap-2 mt-3">
+                <a href="{{ url_for('fees_records') }}" class="btn btn-outline-secondary">Reset Filters</a>
+                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-funnel-fill me-1"></i>Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Fee Records Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="bi bi-list-columns-reverse me-2 text-primary"></i>Fee Records ({{ records.total }} total)</span>
+            <span class="badge bg-primary rounded-pill">Page {{ records.page }} of {{ records.pages }}</span>
+        </div>
+        <div class="table-responsive" style="max-height: 650px;">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th>Receipt No</th>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Category</th>
+                        <th>Total Fee</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Payment Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records.items %}
+                    <tr class="{{ 'table-danger' if row.payment_status == 'Overdue' else '' }}">
+                        <td>
+                            <span class="badge bg-light text-primary border fw-semibold">{{ row.receipt_number }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted fw-semibold">{{ row.student_ref.student_id if row.student_ref else row.student_id }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('student_fee_profile', student_id=row.student_id) }}" class="fw-bold text-decoration-none {{ 'text-danger' if row.payment_status == 'Overdue' else 'text-dark' }}">
+                                {{ row.student_name }}
+                            </a>
+                        </td>
+                        <td>{{ row.fee_category }}</td>
+                        <td class="fw-semibold">₹{{ "{:,.2f}".format(row.total_fee) }}</td>
+                        <td class="fw-bold text-success">₹{{ "{:,.2f}".format(row.amount_paid) }}</td>
+                        <td class="fw-bold {{ 'text-danger' if row.remaining_balance > 0 else 'text-muted' }}">
+                            ₹{{ "{:,.2f}".format(row.remaining_balance) }}
+                        </td>
+                        <td>
+                            {% if row.payment_status == 'Paid' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% elif row.payment_status == 'Partially Paid' %}
+                            <span class="badge bg-warning text-dark">Partially Paid</span>
+                            {% elif row.payment_status == 'Overdue' %}
+                            <span class="badge bg-danger">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.payment_date or '-' }}</td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('student_fee_profile', student_id=row.student_id) }}" class="btn btn-sm btn-outline-primary" title="Student Profile">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                </a>
+                                <a href="{{ url_for('fee_receipt', fee_id=row.id) }}" class="btn btn-sm btn-outline-dark" title="Print Receipt">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                                <a href="{{ url_for('edit_fee', fee_id=row.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit Record">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteFeeModal{{ row.id }}" title="Delete Record">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteFeeModal{{ row.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Fee Record</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <p class="mb-2">Are you sure you want to delete this fee record?</p>
+                                            <div class="p-3 bg-light rounded-3 mb-3">
+                                                <strong>Receipt:</strong> {{ row.receipt_number }}<br>
+                                                <strong>Student:</strong> {{ row.student_name }}<br>
+                                                <strong>Category:</strong> {{ row.fee_category }}<br>
+                                                <strong>Amount:</strong> ₹{{ "{:,.2f}".format(row.total_fee) }}
+                                            </div>
+                                            <p class="text-danger small fw-bold mb-0">This action cannot be undone.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <form action="{{ url_for('delete_fee', fee_id=row.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-danger">Delete Record</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+                            No fee records matching your criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if records.pages > 1 %}
+        <div class="card-footer bg-white py-3">
+            <nav aria-label="Fee records pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {{ 'disabled' if not records.has_prev else '' }}">
+                        <a class="page-link" href="{{ url_for('fees_records', page=records.prev_num, q=search_query, year=selected_year, semester=selected_sem, category=selected_cat, status=selected_status, method=selected_method, sort=sort_by) }}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {% for p in records.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                            <li class="page-item {{ 'active' if p == records.page else '' }}">
+                                <a class="page-link" href="{{ url_for('fees_records', page=p, q=search_query, year=selected_year, semester=selected_sem, category=selected_cat, status=selected_status, method=selected_method, sort=sort_by) }}">{{ p }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if not records.has_next else '' }}">
+                        <a class="page-link" href="{{ url_for('fees_records', page=records.next_num, q=search_query, year=selected_year, semester=selected_sem, category=selected_cat, status=selected_status, method=selected_method, sort=sort_by) }}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

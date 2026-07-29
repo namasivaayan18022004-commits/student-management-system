@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Notification Settings</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-bell-fill text-info me-2"></i>System Notification Preferences</h2>
+            <p class="text-secondary mb-0">Control automated alerts, fee due date reminders, attendance summaries, and system messages.</p>
+        </div>
+        <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    <!-- Notification Toggles Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <form method="POST" action="{{ url_for('settings_notifications') }}">
+            <div class="row g-4">
+                <div class="col-lg-9">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-sliders me-2 text-info"></i>Module Alert Toggles</h5>
+                    
+                    <!-- 1. Student Notifications -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-person-lines-fill fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">Student Enrollment & Profile Notifications</h6>
+                                <p class="text-secondary small mb-0">Send automated email alerts when new students are enrolled or profiles are modified.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="student_notifications" {% if settings.student_notifications %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- 2. Fee Reminders -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-credit-card-fill fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">Fee Payment & Due Date Reminders</h6>
+                                <p class="text-secondary small mb-0">Automatically notify students and parents of upcoming or overdue semester fee payments.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="fee_reminders" {% if settings.fee_reminders %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- 3. Attendance Alerts -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-calendar-check-fill fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">Daily & Monthly Attendance Alerts</h6>
+                                <p class="text-secondary small mb-0">Trigger alerts when a student's attendance drops below the 75% institutional threshold.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="attendance_alerts" {% if settings.attendance_alerts %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- 4. Marks Notifications -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-journal-check fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">Academic Marks & Exam Result Notifications</h6>
+                                <p class="text-secondary small mb-0">Send instant notifications when semester assessment or examination marks are published.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="marks_notifications" {% if settings.marks_notifications %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- 5. Report Notifications -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-file-earmark-bar-graph-fill fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">Report Generation & Scheduled Export Alerts</h6>
+                                <p class="text-secondary small mb-0">Notify administrators when background scheduled reports or bulk Excel/PDF exports finish.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="report_notifications" {% if settings.report_notifications %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- 6. System Notifications -->
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-4 bg-light rounded-4">
+                        <div class="d-flex align-items-center">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-gear-wide-connected fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">System Maintenance & Backup Notifications</h6>
+                                <p class="text-secondary small mb-0">Receive email alerts regarding automated database backups and server health warnings.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="system_notifications" {% if settings.system_notifications %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">Reset Changes</button>
+                        <button type="submit" class="btn btn-info text-white rounded-pill px-4">
+                            <i class="bi bi-check-lg me-1"></i>Save Notification Preferences
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Info -->
+                <div class="col-lg-3">
+                    <div class="card border-0 bg-light rounded-4 p-4">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-envelope-check text-info me-2"></i>Email Delivery Status</h6>
+                        <p class="text-secondary small">Notifications are delivered via the SMTP Server configured in <a href="{{ url_for('settings_email') }}" class="text-decoration-none">Email Configuration</a>.</p>
+                        <hr>
+                        <small class="text-secondary d-block">All notifications are logged in the System Activity Log for audit compliance.</small>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

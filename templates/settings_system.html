@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">System Info & Activity Log</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-cpu-fill text-secondary me-2"></i>System Diagnostics & Audit Log</h2>
+            <p class="text-secondary mb-0">Review server environment specifications, database footprint, entity metrics, and administrator activity audit trail.</p>
+        </div>
+        <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    <!-- System Diagnostics Cards -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-info-square-fill me-2 text-primary"></i>Server Environment & Metrics</h5>
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <span class="text-secondary small fw-bold mb-1">APPLICATION & VERSION</span>
+                <h5 class="fw-bold text-dark mb-2">{{ app_name }}</h5>
+                <span class="badge bg-primary bg-opacity-10 text-primary w-auto align-self-start">{{ app_version }}</span>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <span class="text-secondary small fw-bold mb-1">PYTHON & FLASK RUNTIME</span>
+                <h5 class="fw-bold text-dark mb-2">Python {{ python_version }}</h5>
+                <small class="text-secondary">Flask {{ flask_version }} (WSGI Ready)</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <span class="text-secondary small fw-bold mb-1">DATABASE ENGINE & SIZE</span>
+                <h5 class="fw-bold text-dark mb-2">SQLite {{ sqlite_version }}</h5>
+                <small class="text-secondary">File Footprint: <strong class="text-dark">{{ db_size }}</strong></small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <span class="text-secondary small fw-bold mb-1">TOTAL ENTITIES INDEXED</span>
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                    <div>
+                        <span class="fw-bold fs-5 text-dark">{{ total_students }}</span> <small class="text-secondary">Students</small>
+                    </div>
+                    <div>
+                        <span class="fw-bold fs-5 text-dark">{{ total_teachers }}</span> <small class="text-secondary">Teachers</small>
+                    </div>
+                    <div>
+                        <span class="fw-bold fs-5 text-dark">{{ total_attendance }}</span> <small class="text-secondary">Logs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Administrator Activity Audit Log</h5>
+            
+            <div class="d-flex gap-2 flex-wrap">
+                <!-- Module Filter -->
+                <select id="logModuleFilter" class="form-select form-select-sm" style="width: auto;" onchange="filterActivityLogs()">
+                    <option value="ALL">All Modules</option>
+                    <option value="Authentication">Authentication</option>
+                    <option value="Students">Students</option>
+                    <option value="Teachers">Teachers</option>
+                    <option value="Attendance">Attendance</option>
+                    <option value="Marks">Marks</option>
+                    <option value="Fees">Fees</option>
+                    <option value="Reports">Reports</option>
+                    <option value="Settings">Settings</option>
+                </select>
+
+                <!-- Search box -->
+                <input type="text" id="logSearchInput" class="form-control form-control-sm" placeholder="Search logs by action or user..." style="width: 240px;" onkeyup="filterActivityLogs()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="activityLogTable">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Date & Timestamp</th>
+                        <th scope="col">Administrator</th>
+                        <th scope="col">Action Performed</th>
+                        <th scope="col">Module</th>
+                        <th scope="col" class="text-end">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr class="activity-log-row" data-module="{{ log.module }}" data-text="{{ log.action }} {{ log.admin_user }}">
+                        <td class="fw-bold text-secondary">{{ log.id }}</td>
+                        <td>
+                            <i class="bi bi-calendar3 text-secondary me-1"></i>
+                            {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-person me-1"></i>{{ log.admin_user }}</span>
+                        </td>
+                        <td class="fw-medium text-dark">{{ log.action }}</td>
+                        <td>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ log.module }}</span>
+                        </td>
+                        <td class="text-end text-secondary font-monospace small">{{ log.ip_address }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-secondary">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No activity logs recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterActivityLogs() {
+    const moduleFilter = document.getElementById('logModuleFilter').value;
+    const query = document.getElementById('logSearchInput').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.activity-log-row');
+
+    rows.forEach(row => {
+        const mod = row.getAttribute('data-module');
+        const text = row.getAttribute('data-text').toLowerCase();
+        
+        const matchModule = (moduleFilter === 'ALL' || mod === moduleFilter);
+        const matchQuery = (!query || text.includes(query));
+
+        if (matchModule && matchQuery) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

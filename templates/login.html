@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Login - Student Management System{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card shadow-lg">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary"><i class="bi bi-shield-lock-fill"></i> Admin Login</h2>
+            <p class="text-muted">Enter your credentials to access the ERP</p>
+        </div>
+        
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.username.label(class="form-label fw-semibold") }}
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    {{ form.username(class="form-control", placeholder="Enter username") }}
+                </div>
+                {% for error in form.username.errors %}
+                    <span class="text-danger small">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.password.label(class="form-label fw-semibold") }}
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                    {{ form.password(class="form-control", placeholder="Enter password") }}
+                </div>
+                {% for error in form.password.errors %}
+                    <span class="text-danger small">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="mb-3 form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div>
+            
+            <div class="d-grid mt-4">
+                {{ form.submit(class="btn btn-primary btn-lg rounded-pill shadow-sm") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

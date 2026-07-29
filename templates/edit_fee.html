@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('fees_records') }}">Fee Records</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit {{ fee.receipt_number }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Fee Record: {{ fee.receipt_number }}</h2>
+            <p class="text-muted mb-0">Modify fee amounts, apply scholarships, or record payment transactions</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('fee_receipt', fee_id=fee.id) }}" class="btn btn-outline-dark rounded-pill px-4">
+                <i class="bi bi-printer me-1"></i>View Receipt
+            </a>
+            <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#deleteFeeModalEdit">
+                <i class="bi bi-trash me-1"></i>Delete Record
+            </button>
+        </div>
+    </div>
+
+    <form method="POST" action="" class="needs-validation" novalidate id="feeFormEdit">
+        {{ form.hidden_tag() }}
+        <div class="row g-4">
+            <!-- Form Column -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-4">
+                    <h5 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-person-badge text-primary me-2"></i>Student & Term Details</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Select Student <span class="text-danger">*</span></label>
+                            {{ form.student_id(class="form-select form-select-lg") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fee Category <span class="text-danger">*</span></label>
+                            {{ form.fee_category(class="form-select", id="feeCategorySelect") }}
+                        </div>
+                        <div class="col-md-6" id="customCategoryDiv" style="display: none;">
+                            <label class="form-label fw-semibold">Custom Category Name</label>
+                            {{ form.custom_category(class="form-control", placeholder="e.g. Annual Event Fee") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Academic Year <span class="text-danger">*</span></label>
+                            {{ form.academic_year(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Semester <span class="text-danger">*</span></label>
+                            {{ form.semester(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-calculator text-success me-2"></i>Fee Breakdown & Calculation</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Total Fee Amount (₹) <span class="text-danger">*</span></label>
+                            {{ form.total_fee(class="form-control calc-input", id="totalFeeInput", placeholder="0.00", step="0.01") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Scholarship / Discount (₹)</label>
+                            {{ form.scholarship_discount(class="form-control calc-input", id="scholarshipInput", placeholder="0.00", step="0.01") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Fine Amount (₹)</label>
+                            {{ form.fine_amount(class="form-control calc-input", id="fineInput", placeholder="0.00", step="0.01") }}
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-wallet2 text-info me-2"></i>Payment Details</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Amount Paid (₹)</label>
+                            {{ form.amount_paid(class="form-control calc-input", id="amountPaidInput", placeholder="0.00", step="0.01") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+                            {{ form.payment_method(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Transaction Ref / UTR</label>
+                            {{ form.transaction_reference(class="form-control", placeholder="UTR / Cheque No.") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Payment Date</label>
+                            {{ form.payment_date(class="form-control", type="date") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Due Date <span class="text-danger">*</span></label>
+                            {{ form.due_date(class="form-control calc-input", type="date", id="dueDateInput") }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Remarks / Notes</label>
+                            {{ form.remarks(class="form-control", placeholder="Any additional notes or comments...") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('fees_records') }}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm">
+                            <i class="bi bi-check2-circle me-2"></i>Update Fee Record
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Calculation Preview Column -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 sticky-top" style="top: 20px;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="bi bi-calculator-fill text-primary fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Live Fee Summary</h5>
+                            <span class="text-muted small">Real-time automatic recalculation</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-light rounded-3 mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total Fee:</span>
+                            <span class="fw-bold" id="prevTotal">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Scholarship/Discount:</span>
+                            <span class="text-success fw-bold">- <span id="prevDiscount">₹0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Fine Amount:</span>
+                            <span class="text-danger fw-bold">+ <span id="prevFine">₹0.00</span></span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold text-dark">Net Fee:</span>
+                            <span class="fw-bold text-primary fs-5" id="prevNetFee">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Amount Paid:</span>
+                            <span class="fw-bold text-success" id="prevPaid">₹0.00</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">Remaining Balance:</span>
+                            <span class="fw-bold text-danger fs-4" id="prevBalance">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-3 rounded-3 border">
+                        <span class="text-muted small d-block mb-1">Calculated Payment Status:</span>
+                        <span id="prevStatusBadge" class="badge bg-secondary fs-6 px-4 py-2">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteFeeModalEdit" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Fee Record</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-2">Are you sure you want to delete this fee record?</p>
+                    <div class="p-3 bg-light rounded-3 mb-3">
+                        <strong>Receipt:</strong> {{ fee.receipt_number }}<br>
+                        <strong>Student:</strong> {{ fee.student_name }}<br>
+                        <strong>Category:</strong> {{ fee.fee_category }}<br>
+                        <strong>Amount:</strong> ₹{{ "{:,.2f}".format(fee.total_fee) }}
+                    </div>
+                    <p class="text-danger small fw-bold mb-0">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('delete_fee', fee_id=fee.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete Record</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const feeCatSelect = document.getElementById("feeCategorySelect");
+    const customDiv = document.getElementById("customCategoryDiv");
+
+    function toggleCustomCat() {
+        if (feeCatSelect.value === "Custom") {
+            customDiv.style.display = "block";
+        } else {
+            customDiv.style.display = "none";
+        }
+    }
+    feeCatSelect.addEventListener("change", toggleCustomCat);
+    toggleCustomCat();
+
+    // Live Calculation Logic
+    const totalInput = document.getElementById("totalFeeInput");
+    const discountInput = document.getElementById("scholarshipInput");
+    const fineInput = document.getElementById("fineInput");
+    const paidInput = document.getElementById("amountPaidInput");
+    const dueDateInput = document.getElementById("dueDateInput");
+
+    const prevTotal = document.getElementById("prevTotal");
+    const prevDiscount = document.getElementById("prevDiscount");
+    const prevFine = document.getElementById("prevFine");
+    const prevNetFee = document.getElementById("prevNetFee");
+    const prevPaid = document.getElementById("prevPaid");
+    const prevBalance = document.getElementById("prevBalance");
+    const prevStatusBadge = document.getElementById("prevStatusBadge");
+
+    function formatINR(val) {
+        return "₹" + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function calculateLive() {
+        const total = parseFloat(totalInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
+        const fine = parseFloat(fineInput.value) || 0;
+        const paid = parseFloat(paidInput.value) || 0;
+
+        const netFee = total - discount + fine;
+        const balance = Math.max(0, netFee - paid);
+
+        prevTotal.textContent = formatINR(total);
+        prevDiscount.textContent = formatINR(discount);
+        prevFine.textContent = formatINR(fine);
+        prevNetFee.textContent = formatINR(netFee);
+        prevPaid.textContent = formatINR(paid);
+        prevBalance.textContent = formatINR(balance);
+
+        // Status logic
+        let statusText = "Pending";
+        let badgeClass = "badge bg-secondary fs-6 px-4 py-2";
+
+        const todayStr = new Date().toISOString().split("T")[0];
+        const dueVal = dueDateInput.value || todayStr;
+
+        if (balance <= 0 && netFee > 0) {
+            statusText = "Paid";
+            badgeClass = "badge bg-success fs-6 px-4 py-2";
+        } else if (dueVal < todayStr && balance > 0) {
+            statusText = "Overdue";
+            badgeClass = "badge bg-danger fs-6 px-4 py-2";
+        } else if (paid > 0 && balance > 0) {
+            statusText = "Partially Paid";
+            badgeClass = "badge bg-warning text-dark fs-6 px-4 py-2";
+        }
+
+        prevStatusBadge.textContent = statusText;
+        prevStatusBadge.className = badgeClass;
+    }
+
+    const inputs = [totalInput, discountInput, fineInput, paidInput, dueDateInput];
+    inputs.forEach(el => {
+        if (el) {
+            el.addEventListener("input", calculateLive);
+            el.addEventListener("change", calculateLive);
+        }
+    });
+
+    calculateLive();
+});
+</script>
+{% endblock %}

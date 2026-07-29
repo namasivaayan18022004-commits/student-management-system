@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Report Generator - College ERP{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('reports') }}">Reports Center</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Report Generator</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-funnel-fill text-primary me-2"></i>Institutional Report Generator</h2>
+        <p class="text-muted mb-0">Select custom filters below to dynamically aggregate data from Students, Teachers, Attendance, Marks, or Fees modules.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <a href="{{ url_for('reports_categories') }}" class="btn btn-outline-primary rounded-pill px-3">
+            <i class="bi bi-grid-fill me-1"></i>Report Categories
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-sliders me-2 text-primary"></i>Report Configuration & Filtering</h5>
+        <span class="text-muted small">Choose your desired report parameters and click Generate Report</span>
+    </div>
+    <div class="card-body p-4">
+        <form id="reportGeneratorForm" method="GET" action="{{ url_for('reports_viewer') }}">
+            <div class="row g-3">
+                <!-- 1. Report Category -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="category" class="form-label fw-semibold">Report Category <span class="text-danger">*</span></label>
+                    <select class="form-select" id="category" name="category" required onchange="updateReportTypes()">
+                        <option value="student" {{ 'selected' if request.args.get('category') == 'student' else '' }}>Student Reports</option>
+                        <option value="teacher" {{ 'selected' if request.args.get('category') == 'teacher' else '' }}>Teacher Reports</option>
+                        <option value="attendance" {{ 'selected' if request.args.get('category') == 'attendance' else '' }}>Attendance Reports</option>
+                        <option value="marks" {{ 'selected' if request.args.get('category') == 'marks' else '' }}>Marks Reports</option>
+                        <option value="fees" {{ 'selected' if request.args.get('category') == 'fees' else '' }}>Fees Reports</option>
+                    </select>
+                </div>
+
+                <!-- 2. Report Type -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="report_type" class="form-label fw-semibold">Report Type <span class="text-danger">*</span></label>
+                    <select class="form-select" id="report_type" name="report_type" required>
+                        <!-- Options populated via JS or default -->
+                    </select>
+                </div>
+
+                <!-- 3. Date Range Type -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="date_range" class="form-label fw-semibold">Date Range</label>
+                    <select class="form-select" id="date_range" name="date_range" onchange="toggleDateInputs()">
+                        <option value="all">All Dates / Entire History</option>
+                        <option value="today">Today Only</option>
+                        <option value="specific_date">Specific Date</option>
+                        <option value="month">Specific Month</option>
+                        <option value="year">Specific Year</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Date Inputs -->
+                <div class="col-md-6 col-lg-4 d-none" id="div_specific_date">
+                    <label for="filter_date" class="form-label fw-semibold">Select Date</label>
+                    <input type="date" class="form-control" id="filter_date" name="filter_date" value="{{ today_date }}">
+                </div>
+                <div class="col-md-6 col-lg-4 d-none" id="div_month">
+                    <label for="filter_month" class="form-label fw-semibold">Select Month</label>
+                    <input type="month" class="form-control" id="filter_month" name="filter_month">
+                </div>
+                <div class="col-md-6 col-lg-4 d-none" id="div_year">
+                    <label for="filter_year" class="form-label fw-semibold">Select Year</label>
+                    <input type="number" class="form-control" id="filter_year" name="filter_year" placeholder="e.g. 2026" min="2000" max="2100" value="2026">
+                </div>
+
+                <!-- 4. Department Filter -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="department" class="form-label fw-semibold">Department</label>
+                    <select class="form-select" id="department" name="department">
+                        <option value="all">All Departments</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Business Administration">Business Administration</option>
+                        <option value="Arts & Humanities">Arts & Humanities</option>
+                    </select>
+                </div>
+
+                <!-- 5. Student Filter -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="student_id" class="form-label fw-semibold">Student (Optional)</label>
+                    <select class="form-select" id="student_id" name="student_id">
+                        <option value="all">All Students</option>
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.student_id }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 6. Teacher Filter -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="teacher_id" class="form-label fw-semibold">Teacher (Optional)</label>
+                    <select class="form-select" id="teacher_id" name="teacher_id">
+                        <option value="all">All Teachers</option>
+                        {% for t in teachers %}
+                        <option value="{{ t.id }}">{{ t.teacher_id }} - {{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 7. Academic Year -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="academic_year" class="form-label fw-semibold">Academic Year</label>
+                    <select class="form-select" id="academic_year" name="academic_year">
+                        <option value="all">All Academic Years</option>
+                        <option value="2025-2026">2025-2026</option>
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2023-2024">2023-2024</option>
+                    </select>
+                </div>
+
+                <!-- 8. Semester -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="semester" class="form-label fw-semibold">Semester</label>
+                    <select class="form-select" id="semester" name="semester">
+                        <option value="all">All Semesters</option>
+                        <option value="Sem 1">Sem 1</option>
+                        <option value="Sem 2">Sem 2</option>
+                        <option value="Sem 3">Sem 3</option>
+                        <option value="Sem 4">Sem 4</option>
+                        <option value="Sem 5">Sem 5</option>
+                        <option value="Sem 6">Sem 6</option>
+                        <option value="Sem 7">Sem 7</option>
+                        <option value="Sem 8">Sem 8</option>
+                    </select>
+                </div>
+
+                <!-- 9. Attendance Status -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="attendance_status" class="form-label fw-semibold">Attendance Status</label>
+                    <select class="form-select" id="attendance_status" name="attendance_status">
+                        <option value="all">All Statuses (Present, Absent, Leave)</option>
+                        <option value="Present">Present Only</option>
+                        <option value="Absent">Absent Only</option>
+                        <option value="Leave">Leave Only</option>
+                    </select>
+                </div>
+
+                <!-- 10. Fee Status -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="fee_status" class="form-label fw-semibold">Fee Status</label>
+                    <select class="form-select" id="fee_status" name="fee_status">
+                        <option value="all">All Fee Statuses</option>
+                        <option value="Paid">Paid Only</option>
+                        <option value="Pending">Pending Only</option>
+                        <option value="Overdue">Overdue Only</option>
+                    </select>
+                </div>
+
+                <!-- 11. Result Status -->
+                <div class="col-md-6 col-lg-4">
+                    <label for="result_status" class="form-label fw-semibold">Result Status</label>
+                    <select class="form-select" id="result_status" name="result_status">
+                        <option value="all">All Result Statuses</option>
+                        <option value="Pass">Pass Only</option>
+                        <option value="Fail">Fail Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-info rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#saveTemplateModal">
+                    <i class="bi bi-bookmark-plus-fill me-2"></i>Save Report Template
+                </button>
+
+                <div class="d-flex gap-2">
+                    <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Filters
+                    </button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                        <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>Generate Report
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for Save Report Template -->
+<div class="modal fade" id="saveTemplateModal" tabindex="-1" aria-labelledby="saveTemplateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header bg-info bg-opacity-10">
+        <h5 class="modal-title fw-bold text-dark" id="saveTemplateModalLabel">
+            <i class="bi bi-bookmark-fill text-info me-2"></i>Save Report Template
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('save_report_template') }}">
+          <div class="modal-body p-4">
+              <div class="mb-3">
+                  <label for="template_name" class="form-label fw-semibold">Template Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="template_name" name="template_name" placeholder="e.g. Monthly CSE Attendance Summary" required>
+              </div>
+              <input type="hidden" id="modal_category" name="category">
+              <input type="hidden" id="modal_report_type" name="report_type">
+              <input type="hidden" id="modal_date_range" name="date_range">
+              <p class="text-muted small mb-0">This will save your selected report category and type as a recurring template accessible from the Scheduled Templates center.</p>
+          </div>
+          <div class="modal-footer border-top-0">
+              <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-info text-white rounded-pill px-4">Save Template</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const reportOptions = {
+    student: [
+        "Student List",
+        "Student Profile Report",
+        "New Student Admissions",
+        "Student Contact Report"
+    ],
+    teacher: [
+        "Teacher List",
+        "Teacher Profile Report",
+        "Teacher Experience Report",
+        "Teacher Contact Report"
+    ],
+    attendance: [
+        "Daily Attendance",
+        "Weekly Attendance",
+        "Monthly Attendance",
+        "Student Attendance",
+        "Attendance Percentage",
+        "Low Attendance Report"
+    ],
+    marks: [
+        "Student Marksheet",
+        "Subject-wise Marks",
+        "Rank List",
+        "Pass/Fail Report",
+        "Grade Report",
+        "Semester Result Report"
+    ],
+    fees: [
+        "Fee Collection Report",
+        "Pending Fee Report",
+        "Overdue Fee Report",
+        "Student Payment History",
+        "Daily Collection",
+        "Monthly Collection"
+    ]
+};
+
+function updateReportTypes() {
+    const category = document.getElementById('category').value;
+    const reportTypeSelect = document.getElementById('report_type');
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedType = urlParams.get('report_type');
+
+    reportTypeSelect.innerHTML = "";
+    if (reportOptions[category]) {
+        reportOptions[category].forEach(type => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.text = type;
+            if (selectedType && selectedType === type) {
+                option.selected = true;
+            }
+            reportTypeSelect.appendChild(option);
+        });
+    }
+
+    // Also update modal hidden fields
+    document.getElementById('modal_category').value = category;
+    if (reportTypeSelect.value) {
+        document.getElementById('modal_report_type').value = reportTypeSelect.value;
+    }
+}
+
+function toggleDateInputs() {
+    const range = document.getElementById('date_range').value;
+    document.getElementById('div_specific_date').classList.add('d-none');
+    document.getElementById('div_month').classList.add('d-none');
+    document.getElementById('div_year').classList.add('d-none');
+
+    if (range === 'specific_date') {
+        document.getElementById('div_specific_date').classList.remove('d-none');
+    } else if (range === 'month') {
+        document.getElementById('div_month').classList.remove('d-none');
+    } else if (range === 'year') {
+        document.getElementById('div_year').classList.remove('d-none');
+    }
+    document.getElementById('modal_date_range').value = range;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    updateReportTypes();
+    toggleDateInputs();
+});
+</script>
+{% endblock %}

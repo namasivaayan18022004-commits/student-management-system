@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Add Student - Student Management System{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('students') }}">Students</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Add Student</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white pt-3 pb-2">
+                <h5 class="fw-bold"><i class="bi bi-person-plus"></i> Student Registration Form</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <h6 class="text-primary border-bottom pb-2 mb-3">Academic Information</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            {{ form.student_id.label(class="form-label fw-semibold") }}
+                            {{ form.student_id(class="form-control" + (" is-invalid" if form.student_id.errors else "")) }}
+                            {% for error in form.student_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.department.label(class="form-label fw-semibold") }}
+                            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else "")) }}
+                            {% for error in form.department.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.year.label(class="form-label fw-semibold") }}
+                            {{ form.year(class="form-select" + (" is-invalid" if form.year.errors else "")) }}
+                            {% for error in form.year.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.status.label(class="form-label fw-semibold") }}
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% for error in form.status.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mb-3">Personal Information</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label(class="form-label fw-semibold") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.age.label(class="form-label fw-semibold") }}
+                            {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else ""), type="number") }}
+                            {% for error in form.age.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.gender.label(class="form-label fw-semibold") }}
+                            {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                            {% for error in form.gender.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.phone.label(class="form-label fw-semibold") }}
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                            {% for error in form.phone.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-12 mb-3">
+                            {{ form.address.label(class="form-label fw-semibold") }}
+                            {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=3) }}
+                            {% for error in form.address.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mb-3">Profile Photo</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-12 mb-3">
+                            {{ form.photo.label(class="form-label fw-semibold") }}
+                            {{ form.photo(class="form-control" + (" is-invalid" if form.photo.errors else ""), accept="image/*") }}
+                            <div class="form-text">Upload a JPG or PNG image (Optional).</div>
+                            {% for error in form.photo.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

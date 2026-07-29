@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Search Reports - College ERP{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('reports') }}">Reports Center</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Search Reports</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-search text-primary me-2"></i>Instant Institutional Report Search</h2>
+        <p class="text-muted mb-0">Search report histories and database records instantly by student name, ID, teacher, date, type, or receipt number.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <a href="{{ url_for('reports_generator') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-plus-circle-fill me-1"></i>Generate Report
+        </a>
+    </div>
+</div>
+
+<!-- Instant Search Bar & Filters Card -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+        <div class="input-group mb-3 shadow-sm rounded-pill overflow-hidden border">
+            <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-primary fs-5"></i></span>
+            <input type="text" class="form-control border-0 py-3 fs-6" id="instantSearchInput" placeholder="Type Student Name, ID, Teacher Name, Report Type, Receipt Number..." autocomplete="off">
+            <button class="btn btn-primary px-4 fw-semibold" type="button" onclick="performSearch()">Search Now</button>
+        </div>
+
+        <div class="row g-2 align-items-center mt-2">
+            <div class="col-auto">
+                <span class="small fw-bold text-muted text-uppercase me-2"><i class="bi bi-funnel-fill me-1"></i>Filter By:</span>
+            </div>
+            <div class="col-auto">
+                <select class="form-select form-select-sm rounded-pill" id="filterCategory" onchange="performSearch()">
+                    <option value="all">All Modules</option>
+                    <option value="student">Students</option>
+                    <option value="teacher">Teachers</option>
+                    <option value="attendance">Attendance</option>
+                    <option value="marks">Marks</option>
+                    <option value="fees">Fees / Receipts</option>
+                    <option value="history">Report History</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <select class="form-select form-select-sm rounded-pill" id="filterStatus" onchange="performSearch()">
+                    <option value="all">All Statuses</option>
+                    <option value="Active">Active / Present / Paid</option>
+                    <option value="Pending">Pending / Absent</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instant Search Results Area -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-check me-2 text-primary"></i>Search Results</h5>
+            <span class="text-muted small" id="searchCount">Showing live search results</span>
+        </div>
+        <div id="loadingSpinner" class="spinner-border spinner-border-sm text-primary d-none" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Identifier / ID</th>
+                        <th>Name / Description</th>
+                        <th>Category / Type</th>
+                        <th>Date / Detail</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="searchResultsBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-search fs-1 d-block mb-2 text-secondary"></i>
+                            Start typing in the search box above to search instantly across all College ERP modules!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let searchTimeout = null;
+
+function performSearch() {
+    const query = document.getElementById('instantSearchInput').value;
+    const category = document.getElementById('filterCategory').value;
+    const status = document.getElementById('filterStatus').value;
+    const spinner = document.getElementById('loadingSpinner');
+    const tbody = document.getElementById('searchResultsBody');
+    const countLabel = document.getElementById('searchCount');
+
+    spinner.classList.remove('d-none');
+
+    fetch(`/api/reports/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}&status=${encodeURIComponent(status)}`)
+        .then(response => response.json())
+        .then(data => {
+            spinner.classList.add('d-none');
+            tbody.innerHTML = '';
+            countLabel.innerText = `Found ${data.length} matching institutional records`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-exclamation-circle fs-2 d-block mb-2 text-secondary"></i>
+                            No matching records found for query "${query}". Try different keywords!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4 fw-bold text-primary">${item.identifier}</td>
+                    <td class="fw-semibold text-dark">${item.name}</td>
+                    <td><span class="badge bg-light text-dark border">${item.category}</span></td>
+                    <td class="text-muted small">${item.detail}</td>
+                    <td><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">${item.status}</span></td>
+                    <td class="text-end pe-4">
+                        <a href="${item.view_url}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-eye-fill me-1"></i>View Report
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            spinner.classList.add('d-none');
+            console.error(err);
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById('instantSearchInput');
+    if (input) {
+        input.addEventListener('input', function() {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
+        });
+        // Initial search to load latest items
+        performSearch();
+    }
+});
+</script>
+{% endblock %}

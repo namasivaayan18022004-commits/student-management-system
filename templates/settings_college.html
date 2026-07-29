@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">College Settings</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-building text-primary me-2"></i>College Profile Settings</h2>
+            <p class="text-secondary mb-0">Configure institutional identity, address, contact numbers, and academic year details.</p>
+        </div>
+        <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    <!-- College Settings Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <form method="POST" action="{{ url_for('settings_college') }}" enctype="multipart/form-data">
+            <div class="row g-4">
+                <!-- Left Column: Logo & Description -->
+                <div class="col-lg-4 border-end-lg">
+                    <div class="text-center p-3">
+                        <div class="mb-3">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-light border rounded-circle p-4 shadow-sm" style="width: 140px; height: 140px;">
+                                <i class="bi bi-building text-primary" style="font-size: 3rem;"></i>
+                            </span>
+                        </div>
+                        <h5 class="fw-bold mb-1">{{ settings.college_name }}</h5>
+                        <p class="text-secondary small mb-3">Academic Year: <span class="badge bg-primary">{{ settings.academic_year }}</span></p>
+
+                        <div class="mb-4 text-start">
+                            <label class="form-label fw-bold small text-secondary">COLLEGE LOGO</label>
+                            <input class="form-control" type="file" name="college_logo" accept="image/*">
+                            <div class="form-text small">Recommended size: 400x400 px (PNG or JPG).</div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold small text-secondary">INSTITUTIONAL DESCRIPTION</label>
+                            <textarea class="form-control" name="college_description" rows="5" placeholder="Enter brief history or mission statement...">{{ settings.college_description }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Form Fields -->
+                <div class="col-lg-8">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-info-circle me-2 text-primary"></i>Basic Institutional Information</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold small">COLLEGE / UNIVERSITY NAME <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="college_name" value="{{ settings.college_name }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">ACADEMIC YEAR <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="academic_year" value="{{ settings.academic_year }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">OFFICIAL EMAIL ADDRESS <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="email_address" value="{{ settings.email_address }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">PHONE NUMBER <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="phone_number" value="{{ settings.phone_number }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">WEBSITE URL</label>
+                            <input type="url" class="form-control" name="website_url" value="{{ settings.website_url }}">
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-geo-alt me-2 text-primary"></i>Campus Location & Address</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">STREET ADDRESS <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="college_address" value="{{ settings.college_address }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">CITY <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="city" value="{{ settings.city }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">STATE / PROVINCE <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="state" value="{{ settings.state }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">POSTAL CODE <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="postal_code" value="{{ settings.postal_code }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">COUNTRY <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="country" value="{{ settings.country }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Changes
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-check-lg me-1"></i>Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Marks Dashboard</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-journal-check text-primary me-2"></i>Marks Management Dashboard</h2>
+            <p class="text-muted mb-0">Monitor academic performance, student rankings, subject statistics, and grading distributions across departments.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('add_mark') }}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Enter New Marks
+            </a>
+            <a href="{{ url_for('marks_list') }}" class="btn btn-outline-primary shadow-sm">
+                <i class="bi bi-table me-1"></i> All Marks Directory
+            </a>
+            <a href="{{ url_for('marks_rank_list') }}" class="btn btn-warning text-dark fw-bold shadow-sm">
+                <i class="bi bi-trophy-fill me-1"></i> Student Rank List
+            </a>
+        </div>
+    </div>
+
+    <!-- 7 KPI Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Total Students -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary p-3 rounded-4 me-3">
+                        <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Total Students</h6>
+                        <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Total Subjects -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-info bg-opacity-10 text-info p-3 rounded-4 me-3">
+                        <i class="bi bi-book-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Total Subjects</h6>
+                        <h3 class="fw-bold mb-0">{{ total_subjects }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Marks Entered -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 text-success p-3 rounded-4 me-3">
+                        <i class="bi bi-check-circle-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Marks Entered</h6>
+                        <h3 class="fw-bold mb-0">{{ marks_entered }} <span class="fs-7 text-muted fw-normal">records</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Pending Marks -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-warning bg-opacity-10 text-warning p-3 rounded-4 me-3">
+                        <i class="bi bi-clock-history fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Pending Marks</h6>
+                        <h3 class="fw-bold mb-0">{{ pending_marks }} <span class="fs-7 text-muted fw-normal">records</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Average Percentage -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-secondary bg-opacity-10 text-secondary p-3 rounded-4 me-3" style="color: #6f42c1 !important;">
+                        <i class="bi bi-percent fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Average Percentage</h6>
+                        <h3 class="fw-bold mb-0">{{ avg_pct }}%</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Highest Mark -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 text-success p-3 rounded-4 me-3">
+                        <i class="bi bi-graph-up-arrow fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Highest Mark</h6>
+                        <h3 class="fw-bold mb-0">{{ highest_mark }} <span class="fs-6 text-muted fw-normal">/ 100</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Lowest Mark -->
+        <div class="col-12 col-sm-12 col-md-4 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-danger bg-opacity-10 text-danger p-3 rounded-4 me-3">
+                        <i class="bi bi-graph-down-arrow fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fs-7">Lowest Mark</h6>
+                        <h3 class="fw-bold mb-0">{{ lowest_mark }} <span class="fs-6 text-muted fw-normal">/ 100</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Statistics Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-light">
+                <div class="card-body py-3">
+                    <div class="row text-center g-2 align-items-center">
+                        <div class="col-6 col-md-3 border-end">
+                            <span class="text-muted fs-7 d-block">Overall Pass Rate</span>
+                            <span class="fs-4 fw-bold text-success"><i class="bi bi-check2-circle me-1"></i>{{ pass_pct }}%</span>
+                        </div>
+                        <div class="col-6 col-md-3 border-end">
+                            <span class="text-muted fs-7 d-block">Overall Fail Rate</span>
+                            <span class="fs-4 fw-bold text-danger"><i class="bi bi-x-circle me-1"></i>{{ fail_pct }}%</span>
+                        </div>
+                        <div class="col-6 col-md-3 border-end">
+                            <span class="text-muted fs-7 d-block">Average CGPA</span>
+                            <span class="fs-4 fw-bold text-primary"><i class="bi bi-award me-1"></i>{{ avg_cgpa }} / 10.0</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted fs-7 d-block">Score Range (Avg %)</span>
+                            <span class="fs-4 fw-bold text-dark">{{ lowest_pct }}% - {{ highest_pct }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section (6 Interactive Charts) -->
+    <h4 class="fw-bold mb-3"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Academic Analytics & Distributions</h4>
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Subject-wise Average -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Subject-Wise Average Percentage</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="subjectChart" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Department Performance -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-buildings-fill text-info me-2"></i>Department Performance Comparison</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="deptChart" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: Pass vs Fail Ratio -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill text-success me-2"></i>Pass vs Fail Ratio</h6>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <canvas id="passFailChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 4: Grade Distribution -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-award-fill text-warning me-2"></i>Overall Grade Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="gradeChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 5: Top 5 Performing Students -->
+        <div class="col-12 col-md-12 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Performing Students</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="topPerformersChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performers Section -->
+    <div class="row g-4 mb-4">
+        <!-- Top 10 Students Table -->
+        <div class="col-12 col-xl-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Top 10 Performing Students (Overall Rank)</h5>
+                    <a href="{{ url_for('marks_rank_list') }}" class="btn btn-sm btn-outline-primary">Full Rank List <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Rank</th>
+                                    <th>Student</th>
+                                    <th>Dept</th>
+                                    <th>Sem</th>
+                                    <th>Avg %</th>
+                                    <th>CGPA</th>
+                                    <th>Class Obtained</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in top_10_students %}
+                                <tr>
+                                    <td class="ps-3 fw-bold">
+                                        {% if loop.index == 1 %}
+                                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-trophy-fill me-1"></i>1st</span>
+                                        {% elif loop.index == 2 %}
+                                            <span class="badge bg-secondary px-2 py-1">2nd</span>
+                                        {% elif loop.index == 3 %}
+                                            <span class="badge bg-info px-2 py-1">3rd</span>
+                                        {% else %}
+                                            #{{ loop.index }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ s.name }}</div>
+                                        <div class="fs-7 text-muted">{{ s.student_code }}</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ s.department }}</span></td>
+                                    <td>{{ s.semester }}</td>
+                                    <td class="fw-bold text-primary">{{ s.avg_pct }}%</td>
+                                    <td class="fw-bold">{{ s.cgpa }}</td>
+                                    <td>
+                                        {% if 'Distinction' in s.class_obtained %}
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success">{{ s.class_obtained }}</span>
+                                        {% elif s.class_obtained == 'First Class' %}
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ s.class_obtained }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border">{{ s.class_obtained }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a href="{{ url_for('view_student_marksheet', student_id=s.student_id) }}" class="btn btn-sm btn-outline-primary" title="View Marksheet">
+                                            <i class="bi bi-file-earmark-text"></i> Marksheet
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">No student marks available yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Highest Subject Scores & Department Toppers -->
+        <div class="col-12 col-xl-5">
+            <div class="row g-4">
+                <!-- Highest Subject Scores -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white border-0 pt-3 pb-2">
+                            <h6 class="fw-bold mb-0"><i class="bi bi-lightning-charge-fill text-danger me-2"></i>Highest Individual Subject Scores</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">Student</th>
+                                            <th>Subject</th>
+                                            <th>Score</th>
+                                            <th class="text-end pe-3">Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for m in highest_subject_scores %}
+                                        <tr>
+                                            <td class="ps-3 fw-bold">{{ m.student_name }}</td>
+                                            <td><span class="fs-7">{{ m.subject }}</span></td>
+                                            <td class="fw-bold text-success">{{ m.total_marks }} <span class="fs-7 text-muted">/ 100</span></td>
+                                            <td class="text-end pe-3"><span class="badge bg-success">{{ m.grade }}</span></td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-3 text-muted">No marks recorded.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Department Toppers -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white border-0 pt-3 pb-2">
+                            <h6 class="fw-bold mb-0"><i class="bi bi-award text-primary me-2"></i>Department Toppers</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">Department</th>
+                                            <th>Topper Name</th>
+                                            <th>Avg %</th>
+                                            <th class="text-end pe-3">CGPA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for st in dept_toppers %}
+                                        <tr>
+                                            <td class="ps-3"><span class="badge bg-light text-dark border">{{ st.department }}</span></td>
+                                            <td class="fw-bold">{{ st.name }}</td>
+                                            <td class="fw-bold text-primary">{{ st.avg_pct }}%</td>
+                                            <td class="text-end pe-3 fw-bold">{{ st.cgpa }}</td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-3 text-muted">No department toppers yet.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const primaryColor = '#4e73df';
+    const successColor = '#1cc88a';
+    const infoColor = '#36b9cc';
+    const warningColor = '#f6c23e';
+    const dangerColor = '#e74a3b';
+    const purpleColor = '#6f42c1';
+    const grayColor = '#858796';
+
+    const colorsPalette = [primaryColor, successColor, infoColor, warningColor, dangerColor, purpleColor, grayColor, '#fd7e14', '#20c997'];
+
+    // 1. Subject-Wise Average Percentage
+    const subCtx = document.getElementById('subjectChart');
+    if (subCtx) {
+        new Chart(subCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ sub_labels | tojson }},
+                datasets: [{
+                    label: 'Average %',
+                    data: {{ sub_avgs | tojson }},
+                    backgroundColor: colorsPalette,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    }
+
+    // 2. Department Performance
+    const deptCtx = document.getElementById('deptChart');
+    if (deptCtx) {
+        new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ dept_labels | tojson }},
+                datasets: [{
+                    label: 'Department Avg %',
+                    data: {{ dept_avgs | tojson }},
+                    backgroundColor: [primaryColor, successColor, infoColor, warningColor, purpleColor, dangerColor],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    }
+
+    // 3. Pass vs Fail Ratio
+    const pfCtx = document.getElementById('passFailChart');
+    if (pfCtx) {
+        new Chart(pfCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pass', 'Fail'],
+                datasets: [{
+                    data: {{ pass_fail_data | tojson }},
+                    backgroundColor: [successColor, dangerColor],
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // 4. Grade Distribution
+    const grdCtx = document.getElementById('gradeChart');
+    if (grdCtx) {
+        new Chart(grdCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ grade_labels | tojson }},
+                datasets: [{
+                    label: 'Students Count',
+                    data: {{ grade_counts | tojson }},
+                    backgroundColor: [
+                        '#198754', // O
+                        '#20c997', // A+
+                        '#0d6efd', // A
+                        '#0dcaf0', // B+
+                        '#ffc107', // B
+                        '#fd7e14', // C
+                        '#dc3545'  // F
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    // 5. Top 5 Performing Students
+    const topCtx = document.getElementById('topPerformersChart');
+    if (topCtx) {
+        new Chart(topCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ top_labels | tojson }},
+                datasets: [{
+                    label: 'Avg %',
+                    data: {{ top_scores | tojson }},
+                    backgroundColor: warningColor,
+                    borderColor: '#dfa510',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

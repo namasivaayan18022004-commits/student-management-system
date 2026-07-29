@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb & Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Fees Dashboard</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-credit-card-fill text-primary me-2"></i>Fees Management Dashboard</h2>
+            <p class="text-muted mb-0">Overview of fee collections, outstanding balances, and financial analytics</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('add_fee') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Add Fee Record
+            </a>
+            <a href="{{ url_for('fees_records') }}" class="btn btn-outline-dark rounded-pill px-4">
+                <i class="bi bi-table me-2"></i>Fee Records
+            </a>
+            <a href="{{ url_for('fees_reports') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Fee Reminders Notification Banner -->
+    {% if reminders and reminders|length > 0 %}
+    <div class="card border-0 shadow-sm mb-4 bg-light border-start border-danger border-5">
+        <div class="card-body py-3 px-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-bell-fill text-danger fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Fee Reminders: Pending & Overdue Student Dues
+                        </h6>
+                        <div class="d-flex flex-wrap gap-3 text-muted small">
+                            {% for rem in reminders[:3] %}
+                            <span>
+                                <strong>{{ rem.student_name }}</strong> ({{ rem.fee_category }}): 
+                                <span class="text-danger fw-bold">₹{{ "{:,.2f}".format(rem.remaining_balance) }}</span> 
+                                [Due: {{ rem.due_date }}]
+                            </span>
+                            {% endfor %}
+                            {% if reminders|length > 3 %}
+                            <span class="text-primary fw-bold">+ {{ reminders|length - 3 }} more students</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a href="#pendingFeeListSection" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                        View All Unpaid <i class="bi bi-arrow-down me-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Students</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-dark">{{ total_students }}</h3>
+                    </div>
+                    <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Collected</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-success">₹{{ "{:,.0f}".format(total_collected) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-success bg-opacity-10 text-success rounded-3 p-3">
+                        <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Pending Fees</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-warning">₹{{ "{:,.0f}".format(pending_fees) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-warning bg-opacity-10 text-warning rounded-3 p-3">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Overdue Fees</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-danger">₹{{ "{:,.0f}".format(overdue_fees) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+                        <i class="bi bi-exclamation-octagon-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Today's Collections</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-info">₹{{ "{:,.0f}".format(todays_collections) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-info bg-opacity-10 text-info rounded-3 p-3">
+                        <i class="bi bi-calendar-event fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">This Month</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-primary">₹{{ "{:,.0f}".format(month_collections) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                        <i class="bi bi-calendar-range fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Monthly Collections & Category Distribution -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Monthly Collections (Last 6 Months)</h5>
+                    <span class="badge bg-light text-dark">Institutional Income</span>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="monthlyCollectionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill text-success me-2"></i>Fee Category Breakdown</h5>
+                    <span class="badge bg-light text-dark">Share</span>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="categoryDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Paid vs Pending, Payment Methods, Collection Trend -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-record-circle-fill text-info me-2"></i>Paid vs Pending vs Overdue</h5>
+                <div style="height: 250px;">
+                    <canvas id="paidVsPendingChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-wallet2 text-warning me-2"></i>Payment Method Distribution</h5>
+                <div style="height: 250px;">
+                    <canvas id="methodDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Collection Trend (Last 7 Days)</h5>
+                <div style="height: 250px;">
+                    <canvas id="collectionTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Fee List (Highlight overdue in red) & Recent Payment Activity -->
+    <div class="row g-4">
+        <!-- Pending Fee List -->
+        <div class="col-lg-6" id="pendingFeeListSection">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Pending & Overdue Fee List</h5>
+                        <p class="text-muted small mb-0">Students with outstanding unpaid fee balances</p>
+                    </div>
+                    <a href="{{ url_for('fees_reports', report_type='overdue') }}" class="btn btn-sm btn-outline-danger rounded-pill">
+                        View Overdue Report
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Category</th>
+                                <th>Due Date</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in pending_list %}
+                            <tr class="{{ 'table-danger' if row.payment_status == 'Overdue' else '' }}">
+                                <td>
+                                    <a href="{{ url_for('student_fee_profile', student_id=row.student_id) }}" class="fw-bold text-decoration-none {{ 'text-danger' if row.payment_status == 'Overdue' else 'text-dark' }}">
+                                        {{ row.student_name }}
+                                    </a>
+                                </td>
+                                <td>{{ row.fee_category }}</td>
+                                <td class="{{ 'text-danger fw-bold' if row.payment_status == 'Overdue' else '' }}">{{ row.due_date }}</td>
+                                <td class="fw-bold text-danger">₹{{ "{:,.2f}".format(row.remaining_balance) }}</td>
+                                <td>
+                                    {% if row.payment_status == 'Overdue' %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                    {% elif row.payment_status == 'Partially Paid' %}
+                                    <span class="badge bg-warning text-dark">Partially Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('student_fee_profile', student_id=row.student_id) }}" class="btn btn-sm btn-outline-primary rounded-circle" title="View Profile">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No pending or overdue fees found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Payment Activity -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Recent Payment Activity</h5>
+                        <p class="text-muted small mb-0">Latest fee transactions and collections</p>
+                    </div>
+                    <a href="{{ url_for('fees_records') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        View All Records
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Receipt</th>
+                                <th>Student Name</th>
+                                <th>Category</th>
+                                <th>Paid</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pay in recent_activity %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-light text-primary border fw-semibold">{{ pay.receipt_number }}</span>
+                                </td>
+                                <td class="fw-semibold">{{ pay.student_name }}</td>
+                                <td>{{ pay.fee_category }}</td>
+                                <td class="fw-bold text-success">₹{{ "{:,.2f}".format(pay.amount_paid) }}</td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-dark">{{ pay.payment_method or 'Cash' }}</span>
+                                </td>
+                                <td>{{ pay.payment_date or pay.created_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('fee_receipt', fee_id=pay.id) }}" class="btn btn-sm btn-outline-dark rounded-circle" title="Print Receipt">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No recent payments recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Monthly Collections Chart
+    const ctxMonthly = document.getElementById('monthlyCollectionsChart').getContext('2d');
+    new Chart(ctxMonthly, {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_labels | tojson }},
+            datasets: [{
+                label: 'Collection Amount (₹)',
+                data: {{ monthly_col_data | tojson }},
+                backgroundColor: 'rgba(13, 110, 253, 0.75)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // 2. Fee Category Distribution Chart
+    const ctxCat = document.getElementById('categoryDistributionChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: {{ cat_labels | tojson }},
+            datasets: [{
+                data: {{ cat_data | tojson }},
+                backgroundColor: [
+                    '#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#6f42c1', '#d63384', '#fd7e14'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 3. Paid vs Pending vs Overdue Chart
+    const ctxPaid = document.getElementById('paidVsPendingChart').getContext('2d');
+    new Chart(ctxPaid, {
+        type: 'pie',
+        data: {
+            labels: ['Total Collected', 'Pending Fees', 'Overdue Fees'],
+            datasets: [{
+                data: {{ paid_vs_pending | tojson }},
+                backgroundColor: ['#198754', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 4. Payment Method Distribution Chart
+    const ctxMethod = document.getElementById('methodDistributionChart').getContext('2d');
+    new Chart(ctxMethod, {
+        type: 'bar',
+        data: {
+            labels: {{ method_labels | tojson }},
+            datasets: [{
+                label: 'Collected via Method (₹)',
+                data: {{ method_data | tojson }},
+                backgroundColor: ['#6f42c1', '#0dcaf0', '#198754', '#ffc107', '#0d6efd']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 5. Collection Trend (Last 7 Days)
+    const ctxWeekly = document.getElementById('collectionTrendChart').getContext('2d');
+    new Chart(ctxWeekly, {
+        type: 'line',
+        data: {
+            labels: {{ weekly_labels | tojson }},
+            datasets: [{
+                label: 'Daily Collection (₹)',
+                data: {{ weekly_data | tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.15)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+});
+</script>
+{% endblock %}

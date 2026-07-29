@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Action Bar (Hidden when printing) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 d-print-none flex-wrap gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('fees_records') }}">Fee Records</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ fee.receipt_number }}</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0 text-dark">Official Fee Receipt</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('fees_records') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+            <button onclick="window.print()" class="btn btn-dark rounded-pill px-4 shadow-sm">
+                <i class="bi bi-printer-fill me-2"></i>Print Receipt
+            </button>
+            <button id="downloadPdfBtn" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Printable Receipt Card -->
+    <div class="card border shadow p-5 bg-white mx-auto" id="printableReceipt" style="max-width: 850px; border-radius: 12px;">
+        <!-- Official Header -->
+        <div class="text-center pb-4 mb-4 border-bottom">
+            <div class="d-flex align-items-center justify-content-center mb-2">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-mortarboard-fill fs-3"></i>
+                </div>
+                <div class="text-start">
+                    <h3 class="fw-bold mb-0 text-dark" style="letter-spacing: 0.5px;">PONDICHERRY ENGINEERING COLLEGE</h3>
+                    <p class="mb-0 text-muted small fw-semibold">Pillaichavady, Puducherry - 605014 | Approved by AICTE & Affiliated to Pondicherry University</p>
+                </div>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-4 py-2 mt-2 fs-6 fw-bold text-uppercase">
+                OFFICIAL STUDENT FEE RECEIPT
+            </span>
+        </div>
+
+        <!-- Receipt Metadata Header -->
+        <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+            <div class="col-sm-6">
+                <span class="text-muted small d-block">RECEIPT NUMBER:</span>
+                <span class="fw-bold fs-5 text-primary">{{ fee.receipt_number }}</span>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <span class="text-muted small d-block">PAYMENT DATE:</span>
+                <span class="fw-bold fs-5">{{ fee.payment_date or fee.created_date.strftime('%Y-%m-%d') }}</span>
+            </div>
+        </div>
+
+        <!-- Student Contact & Term Details -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6">
+                <h6 class="fw-bold text-uppercase text-muted small mb-2">STUDENT DETAILS</h6>
+                <div class="border p-3 rounded-3 h-100">
+                    <h5 class="fw-bold mb-1 text-dark">{{ student.name }}</h5>
+                    <p class="mb-1 text-muted small">ID / Reg No: <strong class="text-dark">{{ student.student_id }}</strong></p>
+                    <p class="mb-1 text-muted small">Department: <strong class="text-dark">{{ student.department }}</strong></p>
+                    <p class="mb-0 text-muted small">Contact: <strong class="text-dark">{{ student.phone }}</strong></p>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <h6 class="fw-bold text-uppercase text-muted small mb-2">FEE & TERM DETAILS</h6>
+                <div class="border p-3 rounded-3 h-100">
+                    <p class="mb-1 text-muted small">Fee Category: <strong class="text-primary fs-6">{{ fee.fee_category }}</strong></p>
+                    <p class="mb-1 text-muted small">Academic Year: <strong class="text-dark">{{ fee.academic_year }}</strong></p>
+                    <p class="mb-1 text-muted small">Semester / Term: <strong class="text-dark">{{ fee.semester }}</strong></p>
+                    <p class="mb-0 text-muted small">Due Date: <strong class="text-dark">{{ fee.due_date }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Item Breakdown Table -->
+        <h6 class="fw-bold text-uppercase text-muted small mb-2">FINANCIAL BREAKDOWN</h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description / Fee Category</th>
+                        <th class="text-end">Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-semibold">{{ fee.fee_category }} (Gross Fee Amount)</td>
+                        <td class="text-end fw-semibold">₹{{ "{:,.2f}".format(fee.total_fee) }}</td>
+                    </tr>
+                    {% if fee.scholarship_discount > 0 %}
+                    <tr>
+                        <td class="text-success"><i class="bi bi-tag-fill me-1"></i> Scholarship / Fee Discount</td>
+                        <td class="text-end text-success fw-bold">- ₹{{ "{:,.2f}".format(fee.scholarship_discount) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if fee.fine_amount > 0 %}
+                    <tr>
+                        <td class="text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i> Fine / Late Fee Charge</td>
+                        <td class="text-end text-danger fw-bold">+ ₹{{ "{:,.2f}".format(fee.fine_amount) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="table-light">
+                        <td class="fw-bold">Net Total Fee Payable</td>
+                        <td class="text-end fw-bold fs-6">₹{{ "{:,.2f}".format(fee.total_fee - fee.scholarship_discount + fee.fine_amount) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Payment Transaction & Status Summary -->
+        <h6 class="fw-bold text-uppercase text-muted small mb-2">PAYMENT TRANSACTION SUMMARY</h6>
+        <div class="row g-3 mb-4 p-3 border rounded-3 bg-light">
+            <div class="col-sm-3">
+                <span class="text-muted small d-block">AMOUNT PAID:</span>
+                <span class="fw-bold text-success fs-5">₹{{ "{:,.2f}".format(fee.amount_paid) }}</span>
+            </div>
+            <div class="col-sm-3">
+                <span class="text-muted small d-block">REMAINING BALANCE:</span>
+                <span class="fw-bold {{ 'text-danger' if fee.remaining_balance > 0 else 'text-muted' }} fs-5">
+                    ₹{{ "{:,.2f}".format(fee.remaining_balance) }}
+                </span>
+            </div>
+            <div class="col-sm-3">
+                <span class="text-muted small d-block">PAYMENT STATUS:</span>
+                {% if fee.payment_status == 'Paid' %}
+                <span class="badge bg-success fs-6 mt-1">Paid</span>
+                {% elif fee.payment_status == 'Partially Paid' %}
+                <span class="badge bg-warning text-dark fs-6 mt-1">Partially Paid</span>
+                {% elif fee.payment_status == 'Overdue' %}
+                <span class="badge bg-danger fs-6 mt-1">Overdue</span>
+                {% else %}
+                <span class="badge bg-secondary fs-6 mt-1">Pending</span>
+                {% endif %}
+            </div>
+            <div class="col-sm-3">
+                <span class="text-muted small d-block">METHOD / TXN REF:</span>
+                <span class="fw-semibold text-dark">{{ fee.payment_method or 'Cash' }}</span><br>
+                <span class="small text-muted">{{ fee.transaction_reference or 'N/A' }}</span>
+            </div>
+        </div>
+
+        {% if fee.remarks %}
+        <div class="mb-4">
+            <span class="text-muted small fw-semibold">REMARKS / NOTES:</span>
+            <p class="mb-0 text-dark border-start border-3 border-primary ps-3 py-1 bg-light small">{{ fee.remarks }}</p>
+        </div>
+        {% endif %}
+
+        <!-- QR Code & Signature Block -->
+        <div class="row align-items-center pt-4 border-top mt-2">
+            <div class="col-sm-6 text-center text-sm-start mb-3 mb-sm-0">
+                <!-- Visual SVG Barcode / QR Box -->
+                <div class="d-inline-block border p-2 rounded-2 text-center bg-light">
+                    <!-- Simple simulated QR icon grid -->
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dark">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <line x1="10" y1="10" x2="10" y2="10"></line>
+                        <line x1="14" y1="10" x2="14" y2="10"></line>
+                        <line x1="10" y1="14" x2="10" y2="14"></line>
+                    </svg>
+                    <div class="small text-muted fw-bold mt-1" style="font-size: 10px;">VERIFIED ERP QR</div>
+                </div>
+                <div class="small text-muted mt-2">
+                    Collected By: <strong>{{ fee.collected_by }}</strong>
+                </div>
+            </div>
+            <div class="col-sm-6 text-center text-sm-end">
+                <div class="d-inline-block text-center pe-sm-4">
+                    <div style="height: 40px; font-family: 'Courier New', monospace; font-weight: bold; color: #0d6efd;" class="fs-5">
+                        Dr. S. Mourougan
+                    </div>
+                    <div class="border-top border-dark pt-1 small fw-bold text-uppercase text-muted">
+                        Authorized College Signatory
+                    </div>
+                    <div class="small text-muted" style="font-size: 11px;">Accounts & Fees Department</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- html2pdf.js for PDF Generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+    const element = document.getElementById('printableReceipt');
+    const opt = {
+        margin:       0.4,
+        filename:     'fee_receipt_{{ fee.receipt_number }}.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+});
+</script>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printableReceipt, #printableReceipt * {
+        visibility: visible;
+    }
+    #printableReceipt {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    .d-print-none {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

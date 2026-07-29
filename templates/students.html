@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}All Students - Student Management System{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Students</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-transparent border-0 pt-4 pb-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <h4 class="fw-bold mb-0"><i class="bi bi-people-fill text-primary"></i> Student Directory</h4>
+        
+        <form action="{{ url_for('students') }}" method="GET" class="d-flex" style="flex: 1; max-width: 400px;">
+            <div class="input-group shadow-sm">
+                <input type="text" name="q" class="form-control border-end-0" placeholder="Search by name, ID, dept..." value="{{ query or '' }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+            {% if query %}
+            <a href="{{ url_for('students') }}" class="btn btn-outline-secondary ms-2 shadow-sm d-flex align-items-center" title="Clear Search">
+                <i class="bi bi-x-lg"></i>
+            </a>
+            {% endif %}
+        </form>
+
+        <div>
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-circle"></i> Add New</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Student Profile</th>
+                        <th>Academic Info</th>
+                        <th>Contact Info</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center sticky-action" style="min-width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students.items %}
+                    <tr class="align-middle">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if student.photo %}
+                                <img src="{{ url_for('static', filename='images/uploads/' + student.photo) }}" class="rounded-circle shadow-sm me-3" width="45" height="45" style="object-fit: cover; flex-shrink: 0;">
+                                {% else %}
+                                <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm me-3" style="width:45px; height:45px; font-size:18px; flex-shrink: 0;">
+                                    {{ student.name[0].upper() if student.name else '?' }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold text-dark mb-1">{{ student.name }}</div>
+                                    <span class="badge bg-secondary fw-normal">ID: {{ student.student_id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-primary mb-1">{{ student.department }}</div>
+                            <div class="text-muted small"><i class="bi bi-mortarboard me-1"></i>{{ student.year }} &bull; {{ student.gender }}</div>
+                        </td>
+                        <td>
+                            <div class="mb-1"><a href="mailto:{{ student.email }}" class="text-decoration-none text-muted small"><i class="bi bi-envelope text-primary me-1"></i>{{ student.email }}</a></div>
+                            <div class="text-muted small"><i class="bi bi-telephone text-primary me-1"></i>{{ student.phone }}</div>
+                        </td>
+                        <td class="text-center">
+                            {% if student.status == 'Active' %}
+                            <span class="badge bg-success rounded-pill px-3">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger rounded-pill px-3">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center sticky-action">
+                            <div class="d-flex justify-content-center text-nowrap">
+                                <button type="button" class="btn btn-sm btn-info text-white rounded-end-0" data-bs-toggle="modal" data-bs-target="#viewModal{{ student.id }}" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-sm btn-warning text-white rounded-0 border-start-0 border-end-0" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ url_for('delete_student', student_id=student.id) }}" method="POST" class="m-0" onsubmit="confirmDelete(event)">
+                                    <button type="submit" class="btn btn-sm btn-danger rounded-start-0" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                No students found. <a href="{{ url_for('add_student') }}">Add your first student</a>.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if students.pages > 1 %}
+        <nav aria-label="Student pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not students.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('students', page=students.prev_num) }}" tabindex="-1">Previous</a>
+                </li>
+                {% for page_num in students.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        {% if students.page == page_num %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('students', page=page_num) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not students.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('students', page=students.next_num) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- View Modals -->
+{% for student in students.items %}
+<div class="modal fade" id="viewModal{{ student.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ student.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="viewModalLabel{{ student.id }}"><i class="bi bi-person-badge"></i> Student Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+            <div class="col-md-4 text-center border-end">
+                {% if student.photo %}
+                <img src="{{ url_for('static', filename='images/uploads/' + student.photo) }}" class="student-photo-lg mb-3">
+                {% else %}
+                <div class="bg-secondary text-white rounded d-flex justify-content-center align-items-center mx-auto mb-3" style="width:150px; height:150px; font-size:4rem;">
+                    <i class="bi bi-person"></i>
+                </div>
+                {% endif %}
+                <h4 class="fw-bold">{{ student.name }}</h4>
+                <p class="badge bg-primary fs-6">{{ student.student_id }}</p>
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr><th width="30%">Age:</th><td>{{ student.age }}</td></tr>
+                        <tr><th>Gender:</th><td>{{ student.gender }}</td></tr>
+                        <tr><th>Department:</th><td>{{ student.department }}</td></tr>
+                        <tr><th>Year:</th><td>{{ student.year }}</td></tr>
+                        <tr><th>Email:</th><td>{{ student.email }}</td></tr>
+                        <tr><th>Phone:</th><td>{{ student.phone }}</td></tr>
+                        <tr><th>Address:</th><td>{{ student.address }}</td></tr>
+                        <tr><th>Registered:</th><td>{% if student.created_at %}{{ student.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}N/A{% endif %}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <div>
+            <form action="{{ url_for('delete_student', student_id=student.id) }}" method="POST" class="d-inline" onsubmit="confirmDelete(event)">
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+        </div>
+        <div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-warning text-white"><i class="bi bi-pencil-square"></i> Edit</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

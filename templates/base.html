@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Management System{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        {% if current_user.is_authenticated %}
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h4><i class="bi bi-mortarboard-fill"></i> College ERP</h4>
+            </div>
+            <ul class="list-unstyled components">
+                <li class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">
+                    <a href="{{ url_for('dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'students' else '' }}">
+                    <a href="{{ url_for('students') }}"><i class="bi bi-people-fill"></i> Students</a>
+                </li>
+                <li class="{{ 'active' if request.endpoint == 'teachers' else '' }}">
+                    <a href="{{ url_for('teachers') }}"><i class="bi bi-person-badge-fill"></i> Teachers</a>
+                </li>
+                <li class="{{ 'active' if 'attendance' in (request.endpoint or '') else '' }}">
+                    <a href="{{ url_for('attendance_dashboard') }}"><i class="bi bi-calendar-check-fill"></i> Attendance</a>
+                </li>
+                <li class="{{ 'active' if 'mark' in (request.endpoint or '') else '' }}">
+                    <a href="{{ url_for('marks') }}"><i class="bi bi-journal-check"></i> Marks</a>
+                </li>
+                <li class="{{ 'active' if 'fee' in (request.endpoint or '') else '' }}">
+                    <a href="{{ url_for('fees_dashboard') }}"><i class="bi bi-credit-card-fill"></i> Fees</a>
+                </li>
+                <li class="{{ 'active' if 'report' in (request.endpoint or '') else '' }}">
+                    <a href="{{ url_for('reports') }}"><i class="bi bi-file-earmark-bar-graph-fill"></i> Reports</a>
+                </li>
+                <li class="{{ 'active' if 'settings' in (request.endpoint or '') else '' }}">
+                    <a href="{{ url_for('settings_dashboard') }}"><i class="bi bi-gear-fill"></i> Settings</a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+
+        <!-- Page Content -->
+        <div id="content">
+            {% if current_user.is_authenticated %}
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <div>
+                    <button type="button" id="sidebarCollapse" class="btn btn-primary d-md-none">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="ms-3 fw-bold fs-5 d-none d-sm-inline">Student Management System</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button id="themeToggle" class="btn btn-outline-secondary rounded-circle me-3">
+                        <i id="themeIcon" class="bi bi-moon"></i>
+                    </button>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Admin" width="32" height="32" class="rounded-circle me-2">
+                            <strong>{{ current_user.username }}</strong>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser1">
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            {% endif %}
+
+            <!-- Breadcrumbs -->
+            {% block breadcrumbs %}{% endblock %}
+
+            <!-- Flash Messages -->
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {% set toast_class = 'bg-success text-white' %}
+                            {% if category == 'danger' %}{% set toast_class = 'bg-danger text-white' %}{% endif %}
+                            {% if category == 'info' %}{% set toast_class = 'bg-info text-white' %}{% endif %}
+                            
+                            <div class="toast align-items-center {{ toast_class }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        {{ message }}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Main Content -->
+            {% block content %}{% endblock %}
+            
+            {% if current_user.is_authenticated %}
+            <!-- Footer -->
+            <footer>
+                <small>&copy; {{ current_user.username | capitalize }} - College ERP System</small>
+            </footer>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modals -->
+    {% block modals %}{% endblock %}
+
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

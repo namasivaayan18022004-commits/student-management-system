@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Appearance Settings</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-palette-fill text-success me-2"></i>Theme & Display Customization</h2>
+            <p class="text-secondary mb-0">Customize application theme mode, primary accent colors, sidebar styling, and interface font size.</p>
+        </div>
+        <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    <!-- Appearance Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <form method="POST" action="{{ url_for('settings_appearance') }}">
+            <div class="row g-4">
+                <!-- Theme Selection -->
+                <div class="col-12">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-moon-stars me-2 text-success"></i>Application Color Mode</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="card border-2 p-4 text-center rounded-4 cursor-pointer hover-lift {% if settings.theme_mode == 'light' %}border-success{% endif %}" onclick="selectTheme('light')">
+                                <input type="radio" class="d-none" name="theme_mode" value="light" {% if settings.theme_mode == 'light' %}checked{% endif %}>
+                                <i class="bi bi-sun-fill text-warning fs-1 mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">Light Mode</h6>
+                                <p class="text-secondary small mb-0">Clean, crisp light background for high readability in bright environments.</p>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="card border-2 p-4 text-center rounded-4 cursor-pointer hover-lift {% if settings.theme_mode == 'dark' %}border-success{% endif %}" onclick="selectTheme('dark')">
+                                <input type="radio" class="d-none" name="theme_mode" value="dark" {% if settings.theme_mode == 'dark' %}checked{% endif %}>
+                                <i class="bi bi-moon-fill text-primary fs-1 mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">Dark Mode</h6>
+                                <p class="text-secondary small mb-0">Sleek dark theme that reduces eye strain in low-light environments.</p>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="card border-2 p-4 text-center rounded-4 cursor-pointer hover-lift {% if settings.theme_mode == 'system' %}border-success{% endif %}" onclick="selectTheme('system')">
+                                <input type="radio" class="d-none" name="theme_mode" value="system" {% if settings.theme_mode == 'system' %}checked{% endif %}>
+                                <i class="bi bi-display text-secondary fs-1 mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">System Preference</h6>
+                                <p class="text-secondary small mb-0">Automatically sync with your operating system's day/night theme schedule.</p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Font Size -->
+                <div class="col-12 mt-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-fonts me-2 text-success"></i>Interface Font Size</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="card border-2 p-3 text-center rounded-4 cursor-pointer hover-lift {% if settings.font_size == 'small' %}border-success{% endif %}" onclick="selectFontSize('small')">
+                                <input type="radio" class="d-none" name="font_size" value="small" {% if settings.font_size == 'small' %}checked{% endif %}>
+                                <span class="fw-bold d-block mb-1" style="font-size: 14px;">Small (14px)</span>
+                                <small class="text-secondary">Compact view with higher data density.</small>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="card border-2 p-3 text-center rounded-4 cursor-pointer hover-lift {% if settings.font_size == 'medium' %}border-success{% endif %}" onclick="selectFontSize('medium')">
+                                <input type="radio" class="d-none" name="font_size" value="medium" {% if settings.font_size == 'medium' %}checked{% endif %}>
+                                <span class="fw-bold d-block mb-1" style="font-size: 16px;">Medium / Default (16px)</span>
+                                <small class="text-secondary">Optimal balance of readability & layout.</small>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="card border-2 p-3 text-center rounded-4 cursor-pointer hover-lift {% if settings.font_size == 'large' %}border-success{% endif %}" onclick="selectFontSize('large')">
+                                <input type="radio" class="d-none" name="font_size" value="large" {% if settings.font_size == 'large' %}checked{% endif %}>
+                                <span class="fw-bold d-block mb-1" style="font-size: 18px;">Large (18px)</span>
+                                <small class="text-secondary">Enhanced accessibility and comfortable text size.</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Customization -->
+                <div class="col-12 mt-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-brush me-2 text-success"></i>Accent & Sidebar Colors</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">PRIMARY ACCENT COLOR</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="color" class="form-control form-control-color border-0 shadow-sm" id="accentColorPicker" name="accent_color" value="{{ settings.accent_color or '#0d6efd' }}" title="Choose primary accent color" onchange="selectAccentColor(this.value)">
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #0d6efd;" onclick="selectAccentColor('#0d6efd')" title="Blue"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #198754;" onclick="selectAccentColor('#198754')" title="Green"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #6f42c1;" onclick="selectAccentColor('#6f42c1')" title="Purple"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #dc3545;" onclick="selectAccentColor('#dc3545')" title="Red"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #fd7e14;" onclick="selectAccentColor('#fd7e14')" title="Orange"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">SIDEBAR BACKGROUND COLOR</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="color" class="form-control form-control-color border-0 shadow-sm" id="sidebarColorPicker" name="sidebar_color" value="{{ settings.sidebar_color or '#0d6efd' }}" title="Choose sidebar background color" onchange="selectSidebarColor(this.value)">
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #0d6efd;" onclick="selectSidebarColor('#0d6efd')" title="Primary Blue"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #212529;" onclick="selectSidebarColor('#212529')" title="Dark Navy"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #1a1e21;" onclick="selectSidebarColor('#1a1e21')" title="Charcoal"></button>
+                                    <button type="button" class="btn btn-sm rounded-circle p-3" style="background-color: #0a3622;" onclick="selectSidebarColor('#0a3622')" title="Forest Green"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12 d-flex justify-content-end gap-3 pt-3 border-top mt-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="resetAppearance()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Defaults
+                    </button>
+                    <button type="submit" class="btn btn-success text-white rounded-pill px-4">
+                        <i class="bi bi-check-lg me-1"></i>Save Appearance Settings
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.cursor-pointer { cursor: pointer; }
+.hover-lift:hover { transform: translateY(-3px); }
+</style>
+
+<script>
+function selectTheme(mode) {
+    document.querySelectorAll('input[name="theme_mode"]').forEach(input => {
+        input.checked = (input.value === mode);
+        const card = input.closest('.card');
+        if (card) {
+            card.classList.toggle('border-success', input.checked);
+        }
+    });
+    applyAppearanceSettings(mode, null, null, null);
+}
+
+function selectFontSize(size) {
+    document.querySelectorAll('input[name="font_size"]').forEach(input => {
+        input.checked = (input.value === size);
+        const card = input.closest('.card');
+        if (card) {
+            card.classList.toggle('border-success', input.checked);
+        }
+    });
+    applyAppearanceSettings(null, size, null, null);
+}
+
+function selectAccentColor(color) {
+    document.getElementById('accentColorPicker').value = color;
+    applyAppearanceSettings(null, null, null, color);
+}
+
+function selectSidebarColor(color) {
+    document.getElementById('sidebarColorPicker').value = color;
+    applyAppearanceSettings(null, null, color, null);
+}
+
+function resetAppearance() {
+    selectTheme('light');
+    selectFontSize('medium');
+    selectAccentColor('#0d6efd');
+    selectSidebarColor('#0d6efd');
+}
+</script>
+{% endblock %}

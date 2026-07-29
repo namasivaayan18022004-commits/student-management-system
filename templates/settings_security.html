@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('settings_dashboard') }}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active text-primary" aria-current="page">Security Settings</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-shield-check text-warning me-2"></i>System Security & Policies</h2>
+            <p class="text-secondary mb-0">Configure multi-factor authentication, account lockout thresholds, session timeouts, and password rules.</p>
+        </div>
+        <a href="{{ url_for('settings_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    <!-- Security Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <form method="POST" action="{{ url_for('settings_security') }}">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <!-- 2FA & Auto Logout Toggles -->
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-lock-fill me-2 text-warning"></i>Authentication & Session Controls</h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-4">
+                        <div>
+                            <h6 class="fw-bold mb-1">Two-Factor Authentication (2FA)</h6>
+                            <p class="text-secondary small mb-0">Require a verification code sent to the administrator email during login.</p>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="enable_2fa" {% if settings.enable_2fa %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-4 bg-light rounded-4">
+                        <div>
+                            <h6 class="fw-bold mb-1">Auto-Logout on Inactivity</h6>
+                            <p class="text-secondary small mb-0">Automatically terminate session when user is inactive for more than 30 minutes.</p>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="auto_logout" {% if settings.auto_logout %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- Login Lockout Policies -->
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-shield-exclamation me-2 text-warning"></i>Brute-Force Protection & Account Lockout</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">MAXIMUM FAILED LOGIN ATTEMPTS <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="max_login_attempts" min="1" max="20" value="{{ settings.max_login_attempts }}" required>
+                            <div class="form-text small">Lock account after this many failed attempts.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">ACCOUNT LOCK DURATION (MINUTES) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="lock_duration_minutes" min="5" max="1440" value="{{ settings.lock_duration_minutes }}" required>
+                            <div class="form-text small">Duration before locked account can retry login.</div>
+                        </div>
+                    </div>
+
+                    <!-- Password Complexity -->
+                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-key-fill me-2 text-warning"></i>Password Policy Rules</h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-4 bg-light rounded-4">
+                        <div>
+                            <h6 class="fw-bold mb-1">Enforce Strong Password Complexity</h6>
+                            <p class="text-secondary small mb-0">Require minimum 8 characters with uppercase, lowercase, numbers, and symbols.</p>
+                        </div>
+                        <div class="form-check form-switch fs-4">
+                            <input class="form-check-input" type="checkbox" role="switch" name="password_policy_strong" {% if settings.password_policy_strong %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <button type="reset" class="btn btn-outline-secondary rounded-pill px-4">Reset Changes</button>
+                        <button type="submit" class="btn btn-warning text-dark rounded-pill px-4">
+                            <i class="bi bi-check-lg me-1"></i>Save Security Policies
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Security Guidance -->
+                <div class="col-lg-4">
+                    <div class="card border-0 bg-light rounded-4 p-4">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-warning me-2"></i>Security Recommendation</h6>
+                        <ul class="list-unstyled small text-secondary mb-0">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Keep Two-Factor Authentication enabled on production servers.</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Set failed login threshold between 3 and 5 attempts to thwart brute force attacks.</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ensure all administrator accounts use unique, strong passwords.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

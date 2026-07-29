@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Teacher Profile - {{ teacher.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('teachers') }}">Teachers</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ teacher.name }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Profile Header & Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center pt-5">
+                {% if teacher.photo %}
+                    <img src="{{ url_for('static', filename='images/uploads/' + teacher.photo) }}" alt="Profile Photo" class="rounded-circle shadow mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #fff;">
+                {% else %}
+                    <div class="bg-primary text-white rounded-circle shadow d-flex justify-content-center align-items-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem; border: 4px solid #fff;">
+                        {{ teacher.name[0].upper() if teacher.name else '?' }}
+                    </div>
+                {% endif %}
+                
+                <h4 class="fw-bold mb-1">{{ teacher.name }}</h4>
+                <p class="text-muted mb-2">{{ teacher.designation }} - {{ teacher.department }}</p>
+                
+                <div class="mb-4">
+                    {% if teacher.status == 'Active' %}
+                        <span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i> Active</span>
+                    {% elif teacher.status == 'On Leave' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="bi bi-pause-circle me-1"></i> On Leave</span>
+                    {% else %}
+                        <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-x-circle me-1"></i> Inactive</span>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{{ url_for('edit_teacher', teacher_id=teacher.id) }}" class="btn btn-warning text-dark px-4"><i class="bi bi-pencil-square"></i> Edit Profile</a>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0 pb-3 text-center text-muted small">
+                Registered: {{ teacher.created_at.strftime('%Y-%m-%d') if teacher.created_at else 'N/A' }}<br>
+                Last Updated: {{ teacher.updated_at.strftime('%Y-%m-%d') if teacher.updated_at else 'N/A' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Details -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-transparent pt-3 pb-2 border-bottom">
+                <h5 class="fw-bold text-primary mb-0"><i class="bi bi-person-lines-fill me-2"></i> Professional Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Teacher ID</div>
+                    <div class="col-sm-8">{{ teacher.teacher_id }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Employee ID</div>
+                    <div class="col-sm-8">{{ teacher.employee_id }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Department</div>
+                    <div class="col-sm-8">{{ teacher.department }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Designation</div>
+                    <div class="col-sm-8">{{ teacher.designation }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Qualification</div>
+                    <div class="col-sm-8">{{ teacher.qualification }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Experience</div>
+                    <div class="col-sm-8">{{ teacher.experience }} Years</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Joining Date</div>
+                    <div class="col-sm-8">{{ teacher.joining_date.strftime('%B %d, %Y') if teacher.joining_date else 'N/A' }}</div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-4 text-muted fw-semibold">Salary</div>
+                    <div class="col-sm-8">${{ "%.2f"|format(teacher.salary) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-transparent pt-3 pb-2 border-bottom">
+                <h5 class="fw-bold text-primary mb-0"><i class="bi bi-person-vcard me-2"></i> Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Full Name</div>
+                    <div class="col-sm-8">{{ teacher.name }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Gender</div>
+                    <div class="col-sm-8">{{ teacher.gender }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Date of Birth</div>
+                    <div class="col-sm-8">{{ teacher.dob.strftime('%B %d, %Y') if teacher.dob else 'N/A' }} ({{ teacher.age }} years)</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Email</div>
+                    <div class="col-sm-8"><a href="mailto:{{ teacher.email }}">{{ teacher.email }}</a></div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-sm-4 text-muted fw-semibold">Phone</div>
+                    <div class="col-sm-8"><a href="tel:{{ teacher.phone }}">{{ teacher.phone }}</a></div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-4 text-muted fw-semibold">Address</div>
+                    <div class="col-sm-8">{{ teacher.address | replace('\n', '<br>') | safe }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

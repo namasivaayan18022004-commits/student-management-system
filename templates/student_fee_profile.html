@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('fees_dashboard') }}">Fees Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('fees_records') }}">Fee Records</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ student.name }} Profile</li>
+        </ol>
+    </nav>
+
+    <!-- Student Information Banner -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+        <div class="card-body p-4 bg-gradient-primary-to-secondary text-white" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    {% if student.photo %}
+                    <img src="{{ url_for('static', filename='images/uploads/' + student.photo) }}" alt="{{ student.name }}" class="rounded-circle border border-3 border-white shadow-sm me-4" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center border border-3 border-white shadow-sm me-4 fw-bold fs-3" style="width: 80px; height: 80px;">
+                        {{ student.name[:2].upper() }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="fw-bold mb-1">{{ student.name }}</h3>
+                        <div class="d-flex flex-wrap gap-3 small opacity-90">
+                            <span><i class="bi bi-person-badge me-1"></i> ID: <strong>{{ student.student_id }}</strong></span>
+                            <span><i class="bi bi-building me-1"></i> Dept: <strong>{{ student.department }}</strong></span>
+                            <span><i class="bi bi-calendar-event me-1"></i> Year: <strong>{{ student.year }}</strong></span>
+                            <span><i class="bi bi-envelope me-1"></i> {{ student.email }}</span>
+                            <span><i class="bi bi-telephone me-1"></i> {{ student.phone }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('add_fee') }}" class="btn btn-light rounded-pill px-4 fw-semibold text-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Add Fee Record
+                    </a>
+                    <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-outline-light rounded-pill px-4">
+                        <i class="bi bi-pencil-square me-1"></i>Edit Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6 Fee Summary KPI Cards -->
+    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-piggy-bank-fill text-primary me-2"></i>Fee Summary & Outstanding Account</h5>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Total Fees</span>
+                <h3 class="fw-bold mb-0 mt-1 text-dark">₹{{ "{:,.2f}".format(total_fees) }}</h3>
+                <span class="small text-muted mt-2 d-block">Gross Fee Amount</span>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Paid Amount</span>
+                <h3 class="fw-bold mb-0 mt-1 text-success">₹{{ "{:,.2f}".format(paid_amount) }}</h3>
+                <span class="small text-success mt-2 d-block"><i class="bi bi-check-circle-fill me-1"></i>Collected</span>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Pending Amount</span>
+                <h3 class="fw-bold mb-0 mt-1 text-warning">₹{{ "{:,.2f}".format(pending_amount) }}</h3>
+                <span class="small text-warning mt-2 d-block">Unpaid Dues</span>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Discount</span>
+                <h3 class="fw-bold mb-0 mt-1 text-info">₹{{ "{:,.2f}".format(discount_amount) }}</h3>
+                <span class="small text-muted mt-2 d-block">Scholarships</span>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Fine Amount</span>
+                <h3 class="fw-bold mb-0 mt-1 text-danger">₹{{ "{:,.2f}".format(fine_amount) }}</h3>
+                <span class="small text-danger mt-2 d-block">Late Fee Penalties</span>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card stat-card border-0 shadow-sm h-100 p-3 bg-white">
+                <span class="text-muted small fw-semibold text-uppercase">Net Balance</span>
+                <h3 class="fw-bold mb-0 mt-1 {{ 'text-danger' if pending_amount > 0 else 'text-success' }}">₹{{ "{:,.2f}".format(pending_amount) }}</h3>
+                <span class="small text-muted mt-2 d-block">Current Owed</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Complete Payment & Fee Record History</h5>
+            <span class="badge bg-primary">{{ fees|length }} Records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Receipt Number</th>
+                        <th>Date</th>
+                        <th>Fee Category</th>
+                        <th>Total Fee</th>
+                        <th>Scholarship</th>
+                        <th>Fine</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fees %}
+                    <tr class="{{ 'table-danger' if f.payment_status == 'Overdue' else '' }}">
+                        <td>
+                            <span class="badge bg-light text-primary border fw-semibold">{{ f.receipt_number }}</span>
+                        </td>
+                        <td>{{ f.payment_date or f.created_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="fw-semibold">{{ f.fee_category }}</td>
+                        <td>₹{{ "{:,.2f}".format(f.total_fee) }}</td>
+                        <td class="text-success">₹{{ "{:,.2f}".format(f.scholarship_discount) }}</td>
+                        <td class="text-danger">₹{{ "{:,.2f}".format(f.fine_amount) }}</td>
+                        <td class="fw-bold text-success">₹{{ "{:,.2f}".format(f.amount_paid) }}</td>
+                        <td class="fw-bold {{ 'text-danger' if f.remaining_balance > 0 else 'text-muted' }}">
+                            ₹{{ "{:,.2f}".format(f.remaining_balance) }}
+                        </td>
+                        <td>
+                            <span class="badge bg-info bg-opacity-10 text-dark">{{ f.payment_method or 'Cash' }}</span>
+                        </td>
+                        <td>
+                            {% if f.payment_status == 'Paid' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% elif f.payment_status == 'Partially Paid' %}
+                            <span class="badge bg-warning text-dark">Partially Paid</span>
+                            {% elif f.payment_status == 'Overdue' %}
+                            <span class="badge bg-danger">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('fee_receipt', fee_id=f.id) }}" class="btn btn-sm btn-outline-dark me-1" title="Print Receipt">
+                                <i class="bi bi-printer"></i> Receipt
+                            </a>
+                            <a href="{{ url_for('edit_fee', fee_id=f.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit Record">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="11" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
+                            No fee records exist for this student yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
