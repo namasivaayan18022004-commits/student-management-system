@@ -2863,6 +2863,7 @@ def add_fee():
 @login_required
 def fees_records():
     search_query = request.args.get('q', '').strip()
+    dept_filter = request.args.get('department', 'all')
     year_filter = request.args.get('year', 'all')
     sem_filter = request.args.get('semester', 'all')
     cat_filter = request.args.get('category', 'all')
@@ -2871,24 +2872,27 @@ def fees_records():
     sort_by = request.args.get('sort', 'newest')
     page = request.args.get('page', 1, type=int)
 
-    query = Fee.query
+    query = Fee.query.join(Student)
     if search_query:
         query = query.filter(or_(
             Fee.receipt_number.ilike(f"%{search_query}%"),
             Fee.student_name.ilike(f"%{search_query}%"),
+            Student.student_id.ilike(f"%{search_query}%"),
             Fee.fee_category.ilike(f"%{search_query}%"),
             Fee.remarks.ilike(f"%{search_query}%")
         ))
+    if dept_filter != 'all':
+        query = query.filter(Student.department == dept_filter)
     if year_filter != 'all':
-        query = query.filter_by(academic_year=year_filter)
+        query = query.filter(Fee.academic_year == year_filter)
     if sem_filter != 'all':
-        query = query.filter_by(semester=sem_filter)
+        query = query.filter(Fee.semester == sem_filter)
     if cat_filter != 'all':
-        query = query.filter_by(fee_category=cat_filter)
+        query = query.filter(Fee.fee_category == cat_filter)
     if status_filter != 'all':
-        query = query.filter_by(payment_status=status_filter)
+        query = query.filter(Fee.payment_status == status_filter)
     if method_filter != 'all':
-        query = query.filter_by(payment_method=method_filter)
+        query = query.filter(Fee.payment_method == method_filter)
 
     if sort_by == 'oldest':
         query = query.order_by(Fee.id.asc())
@@ -2901,6 +2905,7 @@ def fees_records():
 
     records_page = query.paginate(page=page, per_page=15, error_out=False)
 
+    departments = sorted(list(set(s.department for s in Student.query.all())))
     years = sorted(list(set(s.year for s in Student.query.all())))
     semesters = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5", "Sem 6", "Sem 7", "Sem 8"]
     categories = sorted(list(set(f.fee_category for f in Fee.query.all())))
@@ -2910,12 +2915,14 @@ def fees_records():
         'fees_records.html',
         records=records_page,
         search_query=search_query,
+        selected_dept=dept_filter,
         selected_year=year_filter,
         selected_sem=sem_filter,
         selected_cat=cat_filter,
         selected_status=status_filter,
         selected_method=method_filter,
         sort_by=sort_by,
+        departments=departments,
         years=years,
         semesters=semesters,
         categories=categories,

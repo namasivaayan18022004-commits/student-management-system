@@ -79,10 +79,26 @@ body {
 
 /* Content Area */
 #content {
-    width: 100%;
+    flex: 1 1 0%;
+    width: calc(100% - var(--sidebar-width));
+    max-width: calc(100% - var(--sidebar-width));
     padding: 20px;
     min-height: 100vh;
     transition: all var(--transition-speed);
+    overflow-x: auto;
+}
+
+.container-fluid {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+    #content {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 /* Cards & Glassmorphism */
@@ -113,6 +129,11 @@ body {
 }
 
 /* Tables */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
 .table {
     color: var(--text-color);
 }

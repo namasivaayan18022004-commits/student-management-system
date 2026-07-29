@@ -29,15 +29,25 @@
     <!-- Search and Multi-Criteria Filters -->
     <div class="card border-0 shadow-sm mb-4 p-4 bg-light">
         <form method="GET" action="{{ url_for('fees_records') }}" class="row g-3 align-items-end">
-            <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <label class="form-label small fw-semibold text-muted">Search Keyword</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="q" class="form-control border-start-0" placeholder="Receipt / Name / Category..." value="{{ search_query }}">
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Student ID / Name / Receipt..." value="{{ search_query }}">
                 </div>
             </div>
 
-            <div class="col-xl-2 col-lg-3 col-md-6">
+            <div class="col-xl-2 col-lg-4 col-md-6 col-sm-12">
+                <label class="form-label small fw-semibold text-muted">Department</label>
+                <select name="department" class="form-select">
+                    <option value="all">All Departments</option>
+                    {% for d in departments %}
+                    <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
                 <label class="form-label small fw-semibold text-muted">Academic Year</label>
                 <select name="year" class="form-select">
                     <option value="all">All Years</option>
@@ -47,7 +57,7 @@
                 </select>
             </div>
 
-            <div class="col-xl-1 col-lg-2 col-md-4">
+            <div class="col-xl-1 col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label small fw-semibold text-muted">Semester</label>
                 <select name="semester" class="form-select">
                     <option value="all">All Semesters</option>
@@ -57,7 +67,7 @@
                 </select>
             </div>
 
-            <div class="col-xl-2 col-lg-3 col-md-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <label class="form-label small fw-semibold text-muted">Fee Category</label>
                 <select name="category" class="form-select">
                     <option value="all">All Categories</option>
@@ -67,7 +77,7 @@
                 </select>
             </div>
 
-            <div class="col-xl-2 col-lg-3 col-md-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <label class="form-label small fw-semibold text-muted">Payment Status</label>
                 <select name="status" class="form-select">
                     <option value="all">All Statuses</option>
@@ -78,7 +88,7 @@
                 </select>
             </div>
 
-            <div class="col-xl-2 col-lg-3 col-md-6">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <label class="form-label small fw-semibold text-muted">Sort By</label>
                 <select name="sort" class="form-select">
                     <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
@@ -88,7 +98,7 @@
                 </select>
             </div>
 
-            <div class="col-xl-12 d-flex justify-content-end gap-2 mt-3">
+            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
                 <a href="{{ url_for('fees_records') }}" class="btn btn-outline-secondary">Reset Filters</a>
                 <button type="submit" class="btn btn-primary px-4"><i class="bi bi-funnel-fill me-1"></i>Apply Filters</button>
             </div>
@@ -101,13 +111,14 @@
             <span class="fw-bold"><i class="bi bi-list-columns-reverse me-2 text-primary"></i>Fee Records ({{ records.total }} total)</span>
             <span class="badge bg-primary rounded-pill">Page {{ records.page }} of {{ records.pages }}</span>
         </div>
-        <div class="table-responsive" style="max-height: 650px;">
-            <table class="table table-hover align-middle mb-0">
+        <div class="table-responsive" style="max-height: 650px; overflow-x: auto; width: 100%;">
+            <table class="table table-hover align-middle mb-0 text-nowrap">
                 <thead class="table-light sticky-top">
                     <tr>
                         <th>Receipt No</th>
                         <th>Student ID</th>
                         <th>Student Name</th>
+                        <th>Department</th>
                         <th>Category</th>
                         <th>Total Fee</th>
                         <th>Paid</th>
@@ -130,6 +141,9 @@
                             <a href="{{ url_for('student_fee_profile', student_id=row.student_id) }}" class="fw-bold text-decoration-none {{ 'text-danger' if row.payment_status == 'Overdue' else 'text-dark' }}">
                                 {{ row.student_name }}
                             </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ row.student_ref.department if row.student_ref else '—' }}</span>
                         </td>
                         <td>{{ row.fee_category }}</td>
                         <td class="fw-semibold">₹{{ "{:,.2f}".format(row.total_fee) }}</td>
