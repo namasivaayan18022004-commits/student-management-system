@@ -64,12 +64,20 @@
                 </select>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In Time</label>
-                <input type="time" name="check_in" id="filterCheckIn" class="form-control rounded-3" value="{{ selected_check_in }}">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In (IST 12h)</label>
+                <select name="check_in" id="filterCheckIn" class="form-select rounded-3">
+                    {% for opt in check_in_options %}
+                    <option value="{{ opt }}" {% if selected_check_in == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out Time</label>
-                <input type="time" name="check_out" id="filterCheckOut" class="form-control rounded-3" value="{{ selected_check_out }}">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out (IST 12h)</label>
+                <select name="check_out" id="filterCheckOut" class="form-select rounded-3">
+                    {% for opt in check_out_options %}
+                    <option value="{{ opt }}" {% if selected_check_out == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="col-12 d-flex justify-content-end gap-2 mt-3">
                 <a href="{{ url_for('take_attendance') }}" class="btn btn-outline-secondary rounded-pill px-4">Reset</a>

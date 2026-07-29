@@ -2218,12 +2218,41 @@ def attendance_dashboard():
 @app.route('/attendance/take', methods=['GET', 'POST'])
 @login_required
 def take_attendance():
-    selected_date = request.args.get('date', dt.utcnow().strftime('%Y-%m-%d'))
+    ist_now = dt.utcnow() + timedelta(hours=5, minutes=30)
+    selected_date = request.args.get('date', ist_now.strftime('%Y-%m-%d'))
     selected_department = request.args.get('department', 'all')
     selected_year = request.args.get('year', 'all')
     selected_teacher = request.args.get('teacher', 'all')
-    selected_check_in = request.args.get('check_in', '08:50')
-    selected_check_out = request.args.get('check_out', '16:30')
+
+    def to_12h_ampm(val, default_ampm):
+        if not val or not str(val).strip():
+            return default_ampm
+        val = str(val).strip()
+        try:
+            t_obj = dt.strptime(val, '%H:%M')
+            return t_obj.strftime('%I:%M %p')
+        except ValueError:
+            pass
+        return val
+
+    selected_check_in = to_12h_ampm(request.args.get('check_in', '08:50 AM'), '08:50 AM')
+    selected_check_out = to_12h_ampm(request.args.get('check_out', '04:30 PM'), '04:30 PM')
+
+    check_in_options = [
+        "07:30 AM", "08:00 AM", "08:30 AM", "08:50 AM", "09:00 AM",
+        "09:15 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+        "12:00 PM", "01:00 PM", "01:30 PM", "02:00 PM"
+    ]
+    if selected_check_in not in check_in_options:
+        check_in_options.append(selected_check_in)
+
+    check_out_options = [
+        "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM",
+        "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
+        "04:45 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM"
+    ]
+    if selected_check_out not in check_out_options:
+        check_out_options.append(selected_check_out)
 
     teachers = Teacher.query.filter_by(status='Active').all()
     departments = [
@@ -2252,19 +2281,8 @@ def take_attendance():
         post_check_in_raw = request.form.get('check_in', selected_check_in)
         post_check_out_raw = request.form.get('check_out', selected_check_out)
 
-        def format_time_str(val, default_ampm):
-            if not val or not str(val).strip():
-                return default_ampm
-            val = str(val).strip()
-            try:
-                t_obj = dt.strptime(val, '%H:%M')
-                return t_obj.strftime('%I:%M %p')
-            except ValueError:
-                pass
-            return val
-
-        formatted_check_in = format_time_str(post_check_in_raw, "08:50 AM")
-        formatted_check_out = format_time_str(post_check_out_raw, "04:30 PM")
+        formatted_check_in = to_12h_ampm(post_check_in_raw, "08:50 AM")
+        formatted_check_out = to_12h_ampm(post_check_out_raw, "04:30 PM")
 
         try:
             day_name = dt.strptime(post_date, '%Y-%m-%d').strftime('%A')
@@ -2319,10 +2337,12 @@ def take_attendance():
                 created_count += 1
 
         db.session.commit()
+
         if created_count > 0 or updated_count > 0:
             flash(f'Attendance successfully recorded for {post_date}! ({created_count} created, {updated_count} updated)', 'success')
         else:
             flash('No attendance changes made.', 'info')
+
         return redirect(url_for('take_attendance', date=post_date, department=selected_department, year=selected_year, teacher=selected_teacher, check_in=selected_check_in, check_out=selected_check_out))
 
     return render_template(
@@ -2335,6 +2355,8 @@ def take_attendance():
         selected_teacher=selected_teacher,
         selected_check_in=selected_check_in,
         selected_check_out=selected_check_out,
+        check_in_options=check_in_options,
+        check_out_options=check_out_options,
         teachers=teachers,
         departments=departments,
         years=years
