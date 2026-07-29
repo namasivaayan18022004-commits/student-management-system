@@ -2224,19 +2224,19 @@ def take_attendance():
     selected_year = request.args.get('year', 'all')
     selected_teacher = request.args.get('teacher', 'all')
 
-    def to_24h_time(val, default_val):
+    def to_12h_ampm(val, default_ampm):
         if not val or not str(val).strip():
-            return default_val
+            return default_ampm
         val = str(val).strip()
-        for fmt in ('%H:%M', '%H:%M:%S', '%I:%M %p', '%I:%M%p'):
+        for fmt in ('%I:%M %p', '%I:%M%p', '%H:%M', '%H:%M:%S'):
             try:
-                return dt.strptime(val, fmt).strftime('%H:%M')
+                return dt.strptime(val, fmt).strftime('%I:%M %p')
             except ValueError:
                 pass
-        return default_val
+        return default_ampm
 
-    selected_check_in = to_24h_time(request.args.get('check_in', '08:50'), '08:50')
-    selected_check_out = to_24h_time(request.args.get('check_out', '16:30'), '16:30')
+    selected_check_in = to_12h_ampm(request.args.get('check_in', '08:50 AM'), '08:50 AM')
+    selected_check_out = to_12h_ampm(request.args.get('check_out', '04:30 PM'), '04:30 PM')
 
     teachers = Teacher.query.filter_by(status='Active').all()
     departments = [

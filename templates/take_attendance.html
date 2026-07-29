@@ -3,6 +3,10 @@
 {% block title %}Take Attendance - College ERP{% endblock %}
 
 {% block content %}
+<!-- Flatpickr 12h Time Picker Library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Breadcrumb Navigation -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb bg-white px-3 py-2 rounded-3 shadow-sm border">
@@ -55,12 +59,18 @@
                 </select>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In Time</label>
-                <input type="time" name="check_in" id="filterCheckIn" class="form-control rounded-3" value="{{ selected_check_in }}">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In (IST 12h)</label>
+                <div class="input-group">
+                    <input type="text" name="check_in" id="filterCheckIn" class="form-control rounded-start-3 bg-white" value="{{ selected_check_in }}" placeholder="08:50 AM" readonly style="cursor: pointer;">
+                    <span class="input-group-text bg-light text-primary rounded-end-3" style="cursor: pointer;" onclick="document.getElementById('filterCheckIn')._flatpickr.open()"><i class="bi bi-clock-fill"></i></span>
+                </div>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out Time</label>
-                <input type="time" name="check_out" id="filterCheckOut" class="form-control rounded-3" value="{{ selected_check_out }}">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out (IST 12h)</label>
+                <div class="input-group">
+                    <input type="text" name="check_out" id="filterCheckOut" class="form-control rounded-start-3 bg-white" value="{{ selected_check_out }}" placeholder="04:30 PM" readonly style="cursor: pointer;">
+                    <span class="input-group-text bg-light text-primary rounded-end-3" style="cursor: pointer;" onclick="document.getElementById('filterCheckOut')._flatpickr.open()"><i class="bi bi-clock-fill"></i></span>
+                </div>
             </div>
             <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-person-badge me-1"></i>Teacher (Marked By)</label>
@@ -206,6 +216,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterCheckOut = document.getElementById('filterCheckOut');
     const postCheckIn = document.getElementById('postCheckIn');
     const postCheckOut = document.getElementById('postCheckOut');
+
+    if (filterCheckIn && typeof flatpickr !== 'undefined') {
+        flatpickr("#filterCheckIn", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false,
+            defaultDate: filterCheckIn.value || "08:50 AM",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (postCheckIn) postCheckIn.value = dateStr;
+            }
+        });
+    }
+    if (filterCheckOut && typeof flatpickr !== 'undefined') {
+        flatpickr("#filterCheckOut", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false,
+            defaultDate: filterCheckOut.value || "04:30 PM",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (postCheckOut) postCheckOut.value = dateStr;
+            }
+        });
+    }
 
     if (filterCheckIn && postCheckIn) {
         filterCheckIn.addEventListener('change', function() {
