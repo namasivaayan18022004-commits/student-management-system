@@ -34,8 +34,8 @@
         <form method="GET" action="{{ url_for('attendance_history') }}" class="row g-3 align-items-end">
             <!-- Keyword Search -->
             <div class="col-lg-3 col-md-6">
-                <label class="form-label fw-bold text-dark small"><i class="bi bi-search me-1"></i>Search Student / Teacher / Remarks</label>
-                <input type="text" name="q" class="form-control rounded-3" placeholder="Search by name or ID..." value="{{ search_query }}">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-search me-1"></i>Search Student / ID / Teacher</label>
+                <input type="text" name="q" class="form-control rounded-3" placeholder="Search by name, student ID..." value="{{ search_query }}">
             </div>
             <!-- Date Filter -->
             <div class="col-lg-2 col-md-6">
@@ -46,6 +46,16 @@
             <div class="col-lg-2 col-md-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-calendar-month me-1"></i>Month</label>
                 <input type="month" name="month" class="form-control rounded-3" value="{{ selected_month if selected_month != 'all' else '' }}">
+            </div>
+            <!-- Department Filter -->
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-building me-1"></i>Department</label>
+                <select name="department" class="form-select rounded-3">
+                    <option value="all" {% if selected_department == 'all' %}selected{% endif %}>All Departments</option>
+                    {% for d in departments %}
+                    <option value="{{ d }}" {% if selected_department == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <!-- Year Filter -->
             <div class="col-lg-2 col-md-6">
@@ -87,7 +97,7 @@
                 </select>
             </div>
             <!-- Buttons -->
-            <div class="col-lg-9 col-md-12 d-flex justify-content-end gap-2">
+            <div class="col-12 d-flex justify-content-end gap-2 mt-2">
                 <a href="{{ url_for('attendance_history') }}" class="btn btn-outline-secondary rounded-pill px-4">Reset</a>
                 <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-funnel-fill me-1"></i> Apply Filters</button>
             </div>
@@ -127,10 +137,11 @@
                         <td class="px-4 fw-semibold text-dark">{{ r.date }}</td>
                         <td><span class="badge bg-light text-secondary border">{{ r.day }}</span></td>
                         <td>
-                            <a href="{{ url_for('student_attendance_profile', student_id=r.student_id) }}" class="text-decoration-none fw-bold text-primary">
+                            <a href="{{ url_for('student_attendance_profile', student_id=r.student_id) }}" class="text-decoration-none fw-bold text-primary d-block">
                                 {{ r.student_name }}
                             </a>
-                            <div class="small text-muted">{{ r.academic_year }}</div>
+                            <span class="small text-secondary fw-semibold">{{ r.student_ref.student_id if r.student_ref else '' }}</span>
+                            <div class="small text-muted">{{ r.student_ref.department if r.student_ref else '' }} • {{ r.academic_year }}</div>
                         </td>
                         <td class="text-center">
                             {% if r.status == 'Present' %}

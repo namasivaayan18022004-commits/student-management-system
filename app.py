@@ -2324,16 +2324,18 @@ def attendance_history():
     search_query = request.args.get('q', '').strip()
     selected_date = request.args.get('date', 'all')
     selected_month = request.args.get('month', 'all')
+    selected_department = request.args.get('department', 'all')
     selected_year = request.args.get('year', 'all')
     selected_semester = request.args.get('semester', 'all')
     selected_teacher = request.args.get('teacher', 'all')
     selected_status = request.args.get('status', 'all')
     sort_by = request.args.get('sort', 'newest')
 
-    query = Attendance.query
+    query = Attendance.query.outerjoin(Student, Attendance.student_id == Student.id)
 
     if search_query:
         query = query.filter(or_(
+            Student.student_id.ilike(f'%{search_query}%'),
             Attendance.student_name.ilike(f'%{search_query}%'),
             Attendance.teacher_name.ilike(f'%{search_query}%'),
             Attendance.remarks.ilike(f'%{search_query}%')
@@ -2342,6 +2344,8 @@ def attendance_history():
         query = query.filter(Attendance.date == selected_date)
     if selected_month != 'all' and selected_month:
         query = query.filter(Attendance.date.like(f'{selected_month}%'))
+    if selected_department != 'all' and selected_department:
+        query = query.filter(Student.department == selected_department)
     if selected_year != 'all':
         query = query.filter(Attendance.academic_year == selected_year)
     if selected_semester != 'all':
@@ -2360,6 +2364,14 @@ def attendance_history():
 
     attendance_records = query.paginate(page=page, per_page=20, error_out=False)
 
+    departments = [
+        'Computer Science',
+        'Electrical Engineering',
+        'Mechanical Engineering',
+        'Civil Engineering',
+        'Business Administration',
+        'Arts & Humanities'
+    ]
     years = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']
     semesters = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8']
     teachers = [t.name for t in Teacher.query.order_by(Teacher.name).all()]
@@ -2370,11 +2382,13 @@ def attendance_history():
         search_query=search_query,
         selected_date=selected_date,
         selected_month=selected_month,
+        selected_department=selected_department,
         selected_year=selected_year,
         selected_semester=selected_semester,
         selected_teacher=selected_teacher,
         selected_status=selected_status,
         sort_by=sort_by,
+        departments=departments,
         years=years,
         semesters=semesters,
         teachers=teachers
