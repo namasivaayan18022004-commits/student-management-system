@@ -12,6 +12,22 @@
 {% endblock %}
 
 {% block content %}
+<!-- Tom Select CSS & JS for Searchable Dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<style>
+.ts-control {
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.95rem !important;
+    border-color: #dee2e6 !important;
+    background-color: #fff !important;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+</style>
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
@@ -29,7 +45,8 @@
                         <div class="row g-3 mb-4">
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold">{{ form.student_id.label }} <span class="text-danger">*</span></label>
-                                {{ form.student_id(class="form-select") }}
+                                {{ form.student_id(class="form-select", placeholder="Type & search by Student ID or Name...") }}
+                                <div class="form-text fs-7 text-muted"><i class="bi bi-search me-1"></i>You can type & search by Student ID (e.g. STU101) or Student Name.</div>
                                 {% if form.student_id.errors %}
                                     <div class="text-danger fs-7 mt-1">{{ form.student_id.errors[0] }}</div>
                                 {% endif %}
@@ -164,6 +181,19 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById('student_id') && typeof TomSelect !== 'undefined') {
+        new TomSelect('#student_id', {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Type & search by Student ID or Name...",
+            allowEmptyOption: false,
+            maxOptions: 500
+        });
+    }
+
     const intInput = document.getElementById('internal_marks');
     const assInput = document.getElementById('assignment_marks');
     const pracInput = document.getElementById('practical_marks');
