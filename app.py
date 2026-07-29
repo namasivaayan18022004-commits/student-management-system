@@ -2222,6 +2222,8 @@ def take_attendance():
     selected_department = request.args.get('department', 'all')
     selected_year = request.args.get('year', 'all')
     selected_teacher = request.args.get('teacher', 'all')
+    selected_check_in = request.args.get('check_in', '08:50')
+    selected_check_out = request.args.get('check_out', '16:30')
 
     teachers = Teacher.query.filter_by(status='Active').all()
     departments = [
@@ -2247,6 +2249,23 @@ def take_attendance():
 
     if request.method == 'POST':
         post_date = request.form.get('date', selected_date)
+        post_check_in_raw = request.form.get('check_in', selected_check_in)
+        post_check_out_raw = request.form.get('check_out', selected_check_out)
+
+        def format_time_str(val, default_ampm):
+            if not val or not str(val).strip():
+                return default_ampm
+            val = str(val).strip()
+            try:
+                t_obj = dt.strptime(val, '%H:%M')
+                return t_obj.strftime('%I:%M %p')
+            except ValueError:
+                pass
+            return val
+
+        formatted_check_in = format_time_str(post_check_in_raw, "08:50 AM")
+        formatted_check_out = format_time_str(post_check_out_raw, "04:30 PM")
+
         try:
             day_name = dt.strptime(post_date, '%Y-%m-%d').strftime('%A')
         except ValueError:
@@ -2262,8 +2281,8 @@ def take_attendance():
         for s in students:
             status_val = request.form.get(f'status_{s.id}')
             remarks_val = request.form.get(f'remarks_{s.id}', '')
-            check_in = "08:50 AM" if status_val == 'Present' else "-"
-            check_out = "04:30 PM" if status_val == 'Present' else "-"
+            check_in = formatted_check_in if status_val == 'Present' else "-"
+            check_out = formatted_check_out if status_val == 'Present' else "-"
 
             existing_record = Attendance.query.filter_by(student_id=s.id, date=post_date).first()
             if not status_val:
@@ -2300,8 +2319,11 @@ def take_attendance():
                 created_count += 1
 
         db.session.commit()
-        flash(f'Attendance saved successfully. ({created_count} added, {updated_count} updated)', 'success')
-        return redirect(url_for('take_attendance', date=post_date, department=selected_department, year=selected_year, teacher=selected_teacher))
+        if created_count > 0 or updated_count > 0:
+            flash(f'Attendance successfully recorded for {post_date}! ({created_count} created, {updated_count} updated)', 'success')
+        else:
+            flash('No attendance changes made.', 'info')
+        return redirect(url_for('take_attendance', date=post_date, department=selected_department, year=selected_year, teacher=selected_teacher, check_in=selected_check_in, check_out=selected_check_out))
 
     return render_template(
         'take_attendance.html',
@@ -2311,6 +2333,8 @@ def take_attendance():
         selected_department=selected_department,
         selected_year=selected_year,
         selected_teacher=selected_teacher,
+        selected_check_in=selected_check_in,
+        selected_check_out=selected_check_out,
         teachers=teachers,
         departments=departments,
         years=years

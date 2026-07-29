@@ -32,11 +32,11 @@
 <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
     <div class="card-body p-4">
         <form method="GET" action="{{ url_for('take_attendance') }}" class="row g-3 align-items-end">
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-calendar-event me-1"></i>Attendance Date</label>
                 <input type="date" name="date" class="form-control rounded-3" value="{{ selected_date }}" required>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-building me-1"></i>Department</label>
                 <select name="department" class="form-select rounded-3">
                     <option value="all" {% if selected_department == 'all' %}selected{% endif %}>All Departments</option>
@@ -45,7 +45,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-mortarboard me-1"></i>Year</label>
                 <select name="year" class="form-select rounded-3">
                     <option value="all" {% if selected_year == 'all' %}selected{% endif %}>All Academic Years</option>
@@ -54,7 +54,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-2 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark small"><i class="bi bi-person-badge me-1"></i>Teacher (Marked By)</label>
                 <select name="teacher" class="form-select rounded-3">
                     <option value="all" {% if selected_teacher == 'all' %}selected{% endif %}>Current / All Teachers</option>
@@ -62,6 +62,14 @@
                     <option value="{{ t.id }}" {% if selected_teacher == (t.id|string) %}selected{% endif %}>{{ t.name }} ({{ t.department }})</option>
                     {% endfor %}
                 </select>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock me-1"></i>Check-In Time</label>
+                <input type="time" name="check_in" id="filterCheckIn" class="form-control rounded-3" value="{{ selected_check_in }}">
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label fw-bold text-dark small"><i class="bi bi-clock-history me-1"></i>Check-Out Time</label>
+                <input type="time" name="check_out" id="filterCheckOut" class="form-control rounded-3" value="{{ selected_check_out }}">
             </div>
             <div class="col-12 d-flex justify-content-end gap-2 mt-3">
                 <a href="{{ url_for('take_attendance') }}" class="btn btn-outline-secondary rounded-pill px-4">Reset</a>
@@ -76,6 +84,8 @@
     <!-- Hidden fields to carry selected filters -->
     <input type="hidden" name="date" value="{{ selected_date }}">
     <input type="hidden" name="teacher_id" value="{{ selected_teacher if selected_teacher != 'all' else '' }}">
+    <input type="hidden" name="check_in" id="postCheckIn" value="{{ selected_check_in }}">
+    <input type="hidden" name="check_out" id="postCheckOut" value="{{ selected_check_out }}">
 
     <!-- Bulk Action Toolbar -->
     <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light border">
@@ -190,6 +200,24 @@ function clearSelection() {
         radio.checked = false;
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterCheckIn = document.getElementById('filterCheckIn');
+    const filterCheckOut = document.getElementById('filterCheckOut');
+    const postCheckIn = document.getElementById('postCheckIn');
+    const postCheckOut = document.getElementById('postCheckOut');
+
+    if (filterCheckIn && postCheckIn) {
+        filterCheckIn.addEventListener('change', function() {
+            postCheckIn.value = this.value;
+        });
+    }
+    if (filterCheckOut && postCheckOut) {
+        filterCheckOut.addEventListener('change', function() {
+            postCheckOut.value = this.value;
+        });
+    }
+});
 </script>
 
 <style>
