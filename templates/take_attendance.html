@@ -116,16 +116,15 @@
                             <th class="py-3 px-4" style="width: 80px;">Photo</th>
                             <th class="py-3">Student ID</th>
                             <th class="py-3">Student Name</th>
-                            <th class="py-3 text-center" style="width: 110px;">Present</th>
-                            <th class="py-3 text-center" style="width: 110px;">Absent</th>
-                            <th class="py-3 text-center" style="width: 110px;">Leave</th>
-                            <th class="py-3 px-4" style="width: 250px;">Remarks</th>
+                            <th class="py-3 text-center" style="width: 120px;">Present</th>
+                            <th class="py-3 text-center" style="width: 120px;">Absent</th>
+                            <th class="py-3 px-4" style="width: 280px;">Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for s in students %}
                         {% set rec = att_map.get(s.id) %}
-                        {% set curr_st = rec.status if rec else 'Present' %}
+                        {% set curr_st = rec.status if rec else '' %}
                         <tr>
                             <td class="px-4">
                                 {% if s.photo %}
@@ -151,20 +150,15 @@
                                     <input class="form-check-input status-radio status-absent" type="radio" name="status_{{ s.id }}" id="abs_{{ s.id }}" value="Absent" {% if curr_st == 'Absent' %}checked{% endif %}>
                                 </div>
                             </td>
-                            <td class="text-center">
-                                <div class="form-check d-flex justify-content-center">
-                                    <input class="form-check-input status-radio status-leave" type="radio" name="status_{{ s.id }}" id="lev_{{ s.id }}" value="Leave" {% if curr_st == 'Leave' %}checked{% endif %}>
-                                </div>
-                            </td>
                             <td class="px-4">
                                 <input type="text" name="remarks_{{ s.id }}" class="form-control form-control-sm rounded-3" placeholder="Add remarks..." value="{{ rec.remarks if rec and rec.remarks else '' }}">
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-people fs-1 d-block mb-2"></i>
-                                No active students found matching the selected year filter.
+                                No active students found matching the selected filters.
                             </td>
                         </tr>
                         {% endfor %}
@@ -183,7 +177,7 @@
 
 <script>
 function markAll(statusType) {
-    const selector = statusType === 'Present' ? '.status-present' : (statusType === 'Absent' ? '.status-absent' : '.status-leave');
+    const selector = statusType === 'Present' ? '.status-present' : '.status-absent';
     const radios = document.querySelectorAll(selector);
     radios.forEach(radio => {
         radio.checked = true;

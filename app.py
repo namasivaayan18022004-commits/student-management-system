@@ -2260,12 +2260,18 @@ def take_attendance():
         created_count = 0
 
         for s in students:
-            status_val = request.form.get(f'status_{s.id}', 'Present')
+            status_val = request.form.get(f'status_{s.id}')
             remarks_val = request.form.get(f'remarks_{s.id}', '')
-            check_in = "08:50 AM" if status_val == 'Present' else ("09:15 AM" if status_val == 'Leave' else "-")
-            check_out = "04:30 PM" if status_val == 'Present' else ("01:00 PM" if status_val == 'Leave' else "-")
+            check_in = "08:50 AM" if status_val == 'Present' else "-"
+            check_out = "04:30 PM" if status_val == 'Present' else "-"
 
             existing_record = Attendance.query.filter_by(student_id=s.id, date=post_date).first()
+            if not status_val:
+                if existing_record:
+                    db.session.delete(existing_record)
+                    updated_count += 1
+                continue
+
             if existing_record:
                 existing_record.status = status_val
                 existing_record.remarks = remarks_val
