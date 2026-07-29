@@ -2219,15 +2219,24 @@ def attendance_dashboard():
 @login_required
 def take_attendance():
     selected_date = request.args.get('date', dt.utcnow().strftime('%Y-%m-%d'))
+    selected_department = request.args.get('department', 'all')
     selected_year = request.args.get('year', 'all')
-    selected_semester = request.args.get('semester', 'all')
     selected_teacher = request.args.get('teacher', 'all')
 
     teachers = Teacher.query.filter_by(status='Active').all()
+    departments = [
+        'Computer Science',
+        'Electrical Engineering',
+        'Mechanical Engineering',
+        'Civil Engineering',
+        'Business Administration',
+        'Arts & Humanities'
+    ]
     years = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']
-    semesters = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8']
 
     query = Student.query.filter_by(status='Active')
+    if selected_department != 'all':
+        query = query.filter(Student.department == selected_department)
     if selected_year != 'all':
         query = query.filter(Student.year == selected_year)
     students = query.order_by(Student.student_id.asc()).all()
@@ -2275,7 +2284,7 @@ def take_attendance():
                     date=post_date,
                     day=day_name,
                     academic_year=s.year,
-                    semester=selected_semester if selected_semester != 'all' else 'Sem 5',
+                    semester='Sem 5',
                     status=status_val,
                     check_in_time=check_in,
                     check_out_time=check_out,
@@ -2286,19 +2295,19 @@ def take_attendance():
 
         db.session.commit()
         flash(f'Attendance saved successfully. ({created_count} added, {updated_count} updated)', 'success')
-        return redirect(url_for('take_attendance', date=post_date, year=selected_year, semester=selected_semester, teacher=selected_teacher))
+        return redirect(url_for('take_attendance', date=post_date, department=selected_department, year=selected_year, teacher=selected_teacher))
 
     return render_template(
         'take_attendance.html',
         students=students,
         att_map=att_map,
         selected_date=selected_date,
+        selected_department=selected_department,
         selected_year=selected_year,
-        selected_semester=selected_semester,
         selected_teacher=selected_teacher,
         teachers=teachers,
-        years=years,
-        semesters=semesters
+        departments=departments,
+        years=years
     )
 
 
