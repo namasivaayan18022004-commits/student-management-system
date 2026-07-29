@@ -33,91 +33,91 @@
 <!-- 6 KPI Summary Cards (Animated Bootstrap Cards) -->
 <div class="row g-4 mb-4">
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 bg-gradient text-white" style="background: linear-gradient(135deg, #1e3c72, #2a5298); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-gradient text-white" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Total Students</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Total Students</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-people-fill fs-6"></i>
+                        <i class="bi bi-people-fill fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6">{{ total_students }}</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-arrow-up-right me-1"></i>Enrolled active</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ total_students }}</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-arrow-up-right me-1"></i>Enrolled active</small>
             </div>
         </div>
     </div>
 
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #11998e, #38ef7d); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Present Today</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Present Today</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-check-circle-fill fs-6"></i>
+                        <i class="bi bi-check-circle-fill fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6">{{ present_today }}</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-person-check-fill me-1"></i>Checked in</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ present_today }}</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-person-check-fill me-1"></i>Checked in</small>
             </div>
         </div>
     </div>
 
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #eb3349, #f45c43); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #eb3349, #f45c43); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Absent Today</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Absent Today</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-x-circle-fill fs-6"></i>
+                        <i class="bi bi-x-circle-fill fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6">{{ absent_today }}</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-exclamation-triangle-fill me-1"></i>Unexcused</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ absent_today }}</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Unexcused</small>
             </div>
         </div>
     </div>
 
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 text-dark" style="background: linear-gradient(135deg, #f9d423, #ff4e50); color: #fff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #f9d423, #ff4e50); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Leave Today</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Leave Today</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-clock-history fs-6"></i>
+                        <i class="bi bi-clock-history fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6 text-white">{{ leave_today }}</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-calendar-event me-1"></i>Approved leave</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ leave_today }}</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-calendar-event me-1"></i>Approved leave</small>
             </div>
         </div>
     </div>
 
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #6a11cb, #2575fc); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #6a11cb, #2575fc); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Overall Att. %</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Overall Att. %</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-percent fs-6"></i>
+                        <i class="bi bi-percent fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6">{{ att_percentage }}%</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-graph-up me-1"></i>All semesters</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ att_percentage }}%</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-graph-up me-1"></i>All semesters</small>
             </div>
         </div>
     </div>
 
     <div class="col-xl-2 col-md-4 col-sm-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #00c6ff, #0072ff); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 shadow-sm rounded-4 h-100 text-white" style="background: linear-gradient(135deg, #00c6ff, #0072ff); color: #ffffff !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-white-50 fw-semibold small text-uppercase">Monthly Att. %</span>
+                    <span class="fw-semibold small text-uppercase" style="color: rgba(255, 255, 255, 0.9) !important;">Monthly Att. %</span>
                     <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-calendar-month-fill fs-6"></i>
+                        <i class="bi bi-calendar-month-fill fs-6 text-white"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0 display-6">{{ monthly_att_percentage }}%</h3>
-                <small class="text-white-50 mt-1 d-block"><i class="bi bi-check2-all me-1"></i>Current month</small>
+                <h3 class="fw-bold mb-0 display-6 text-white" style="color: #ffffff !important;">{{ monthly_att_percentage }}%</h3>
+                <small class="mt-1 d-block" style="color: rgba(255, 255, 255, 0.8) !important;"><i class="bi bi-check2-all me-1"></i>Current month</small>
             </div>
         </div>
     </div>
